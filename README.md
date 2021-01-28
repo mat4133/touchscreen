@@ -7,7 +7,6 @@ Completed tasks:
  - Set up frames for settings, streaming, main menu and guide with their widgets (Matthew)
  - Add in mechanism for saving and loading user preferences when inputting stream code (Matthew)
  
- 
  Tasks currently in progress
  - Add in mechanism for user to connect to Wifi through touchscreen (Matthew)
        - Done for WEP (need to test)
@@ -18,3 +17,6 @@ Tasks still to complete/would be nice to do: (please tick these off as appropria
  - Add in a slider to dim screen (or have a function to make touchscreen 'sleep' to save battery a few minutes after streaming begins (Abigail)
  - Type in a guide for the user (Matthew/Sam)
  - Add in keyboard for the user to type in stream key/wifi details (Matthew)
+
+IMPORTANT NOTES:
+- YOU WILL NEED TO DOWNLOAD PHOTOS FOR CODE TO RUN AND CHANGE THEIR DIRECTORIES
