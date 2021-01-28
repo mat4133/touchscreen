@@ -13,8 +13,8 @@ Completed tasks:
        - Need to do for WPA and WPA2 (possibly through editing config file, or finding module)
 
 Tasks still to complete/would be nice to do: (please tick these off as appropriate)
- - Add in colour/formatting to make it look better + Diocese of durham and uni logos (Sita) 
- - Add in a slider to dim screen (or have a function to make touchscreen 'sleep' to save battery a few minutes after streaming begins (Abigail)
+ - Add in colour/formatting to make it look better + Diocese of durham and uni logos (I think Sita said she'd do this) 
+ - Add in a slider to dim screen (or have a function to make touchscreen 'sleep' to save battery a few minutes after streaming begins (I think Abigail said she'd look into this)
  - Type in a guide for the user (Matthew/Sam)
  - Add in keyboard for the user to type in stream key/wifi details (Matthew)
 
