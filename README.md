@@ -6,7 +6,12 @@ The attached code is for the project 'streaming on a prayer'. It contains a vers
 Completed tasks:
  - Set up frames for settings, streaming, main menu and guide with their widgets (Matthew)
  - Add in mechanism for saving and loading user preferences when inputting stream code (Matthew)
+ 
+ 
+ Tasks currently in progress
  - Add in mechanism for user to connect to Wifi through touchscreen (Matthew)
+       - Done for WEP (need to test)
+       - Need to do for WPA and WPA2 (possibly through editing config file, or finding module)
 
 Tasks still to complete/would be nice to do: (please tick these off as appropriate)
  - Add in colour/formatting to make it look better + Diocese of durham and uni logos (Sita) 
