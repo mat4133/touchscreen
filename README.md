@@ -19,4 +19,4 @@ Tasks still to complete/would be nice to do: (please tick these off as appropria
  - Add in keyboard for the user to type in stream key/wifi details (Matthew)
 
 IMPORTANT NOTES:
-- YOU WILL NEED TO DOWNLOAD PHOTOS FOR CODE TO RUN AND CHANGE THEIR DIRECTORIES
+- YOU WILL NEED TO DOWNLOAD PHOTOS AND CHANGE THEIR DIRECTORIES FOR CODE TO RUN
