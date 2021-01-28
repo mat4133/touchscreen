@@ -14,9 +14,9 @@ video_connection = 0
 # user to be able to start/stop stream
 # user to be able to pan to focus on parts of the stream
 # user to be warned if they try to stream w_out:
-# internet
-# valid stream key
-# audio and video devices connected
+#   internet
+#   valid stream key
+#   audio and video devices connected
 
 # In the settings:
 # user to input a stream key which is then saved (and accessable on future uses of device)
@@ -27,7 +27,7 @@ video_connection = 0
 # This application should boot up upon turning the power on the pi (needs to be configured within the pi you are using
 # more work needs to be done)
 
-# Possible other options that I am investigating:
+# Possible other options that to investigate:
 # Displaying current battery life
 # Displaying the devices connected (if more than one are connected the user could choose between them???)
 # Adding in a helpful tutorial explainig how this works from the main menu section
@@ -126,6 +126,7 @@ wifi_connected.grid(column=1, row=0, sticky='nesw')
 
 # Wifi login and code ----------------------------------------------------------------------
 
+#DONT UNCOMMENT THIS (or it will not work)
 ''' 
 wifi_storage = 'wifi_storage'
 
