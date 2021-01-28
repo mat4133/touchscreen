@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import messagebox, _setit
 from PIL import Image, ImageTk
 import pickle
+import os
 
 audio_connection = 0
 video_connection = 0
@@ -53,6 +54,7 @@ main_menu = Frame(app, bg='black')
 settings = Frame(app, bg='black')
 stream = Frame(app, bg='black')
 tutorial = Frame(app, bg='black')
+wifi_login = Frame(app, bg='black')
 
 # setting up main menu
 main_menu.pack(padx=1, pady=1, expand=True, fill=BOTH)
@@ -75,6 +77,16 @@ def change_stream():
 def change_tutorial():
     main_menu.pack_forget()
     tutorial.pack(padx=0, pady=0, expand=TRUE, fill=BOTH)
+    
+# settings to wifi login    
+def change_wifi():
+    settings.pack_forget()
+    wifi_login.pack(padx=0, pady=0, expand=TRUE, fill=BOTH)
+    
+# wifi login to settings
+def back_settings():
+    wifi_login.pack_forget()
+    settings.pack(padx=0, pady=0, expand=TRUE, fill=BOTH)
 
 
 # Main menu display (three buttons directing user to settings and then streaming)--------------------------------------
@@ -112,17 +124,66 @@ wifi_label.grid(column=0, row=0, sticky='nesw')
 wifi_connected = Label(settings, text='Unconnected', bg='grey60')
 wifi_connected.grid(column=1, row=0, sticky='nesw')
 
+# Wifi login and code ----------------------------------------------------------------------
+
+''' 
+wifi_storage = 'wifi_storage'
+
+sample_wifi_list = {'network1':'GNU'}
+
+stored_network = open(wifi_storage, 'wb')
+pickle.dump(sample_wifi_list,stored_network)
+stored_network.close()
+
+stored_network1 = open(wifi_storage, 'rb')
+saved_networks = pickle.load(stored_network1)
+stored_network1.close()
 
 def wifi_connect():
-    # insert code for connecting to new wifi network
+    try:
+        os.system('sudo ifconfig wlan0 up')
+        command = 'sudo iwconfig wlan0 essid' + username_entr.get() + 'key s:' + password_entr.get()
+        os.system(command)
+        os.system('sudo dhclient wlan0')
+    except:
+        messagebox.showwarning('Either: wrong username/password or wrong type of network (still working on WPA/WPA2)')
 
-    # use SSID and shell commands
+'''
 
-    # then save to textfile called wifi settings
-    print('wifi connection')
+wifi_login.grid_rowconfigure((0,1,2,3), weight = 1)
+wifi_login.grid_columnconfigure((0,1), weight = 1)
 
+saved_lbl = Label(wifi_login, text='Saved Networks', )
+saved_lbl.grid(column=0,row=0, sticky='nesw')
 
-wifi_button = Button(settings, text='Connect', command=wifi_connect)
+saved_networks = ['Placeholder']
+current_network = StringVar()
+current_network.set('Placeholder')
+
+saved_menu = OptionMenu(wifi_login, current_network, *saved_networks)
+saved_menu.grid(column=1,row=0, sticky='nesw')
+
+username_lbl = Label(wifi_login, text='Username:')
+username_lbl.grid(column=0, row=1, sticky='nesw')
+
+username_entr = Entry(wifi_login)
+username_entr.grid(column=1, row=1, sticky='nesw')
+
+password_lbl = Label(wifi_login, text='Password:')
+password_lbl.grid(column=0, row=2, sticky='nesw')
+
+password_entr = Entry(wifi_login)
+password_entr.grid(column=1, row=2, sticky='nesw')
+
+back_btn = Button(wifi_login, text='back', command=back_settings)
+back_btn.grid(column=0, row=3, sticky='nesw')
+
+connect_btn = Button(wifi_login, text='Connect (and save)')
+connect_btn.grid(column=1, row=3, sticky='nesw')
+
+#Settings frame--------------------------------------------------------------------------------------
+
+wifi_button = Button(settings, text='Connect', command=change_wifi)
 wifi_button.grid(column=2, row=0, sticky='nesw')
 
 # code for saving and importing streams
@@ -321,7 +382,7 @@ updown.grid(column=1, row=0, sticky='nesw')
 updown.columnconfigure(0, weight=1)
 updown.rowconfigure((0, 1), weight=1)
 
-uparrow = Image.open("\\Users\\Matthew Scholar\\Documents\\UpArrow.png")  # needs to be whatever your directory is
+uparrow = Image.open("//home//pi//touchscreen//Touchscreen_photos//UpArrow.png")  # needs to be whatever your directory is
 
 # adjusting up arrow size
 up_per = (arrow_width / float(uparrow.size[0]))
@@ -329,11 +390,11 @@ height = int((float(uparrow.size[1]) * float(up_per)))
 uparrow = uparrow.resize((arrow_width, height))
 uparrowrender = ImageTk.PhotoImage(uparrow)
 
-up_arr = Button(updown, image=uparrowrender, bg='black', borderwidth=0)
+up_arr = Button(updown, image=uparrowrender, bg='black', highlightthickness=0)
 up_arr.image = uparrowrender
 up_arr.grid(column=0, row=0)
 
-downarrow = Image.open("\\Users\\Matthew Scholar\\Documents\\DownArrow.png")  # needs to be whatever your directory is
+downarrow = Image.open("//home//pi//touchscreen//Touchscreen_photos//DownArrow.png")  # needs to be whatever your directory is
 
 # adjusting down arrow size
 down_per = (arrow_width / float(downarrow.size[0]))
@@ -341,7 +402,7 @@ height = int((float(downarrow.size[1]) * float(down_per)))
 downarrow = downarrow.resize((arrow_width, height))
 downarrowrender = ImageTk.PhotoImage(downarrow)
 
-down_arr = Button(updown, image=downarrowrender, bg='black', borderwidth=0)
+down_arr = Button(updown, image=downarrowrender, bg='black', highlightthickness=0)
 down_arr.image = downarrowrender
 down_arr.grid(column=0, row=1)
 
@@ -353,26 +414,26 @@ leftright.grid(column=0, row=1, sticky='nesw')
 leftright.grid_columnconfigure((0, 1), weight=1)
 leftright.grid_rowconfigure(0, weight=1)
 
-leftarrow = Image.open("\\Users\\Matthew Scholar\\Documents\\LeftArrow.png")  # needs to be whatever your directory is
+leftarrow = Image.open("//home//pi//touchscreen//Touchscreen_photos//LeftArrow.png")  # needs to be whatever your directory is
 
 # adjusting left arrow size
 left_per = (arrow_height / float(leftarrow.size[0]))
 height = int((float(leftarrow.size[1]) * float(left_per)))
 leftarrow = leftarrow.resize((arrow_height, height))
 leftarrowrender = ImageTk.PhotoImage(leftarrow)
-left_arr = Button(leftright, image=leftarrowrender, bg='black', borderwidth=0)
+left_arr = Button(leftright, image=leftarrowrender, bg='black', highlightthickness=0)
 
 left_arr.image = leftarrowrender
 left_arr.grid(row=0, column=0)
 
-rightarrow = Image.open("\\Users\\Matthew Scholar\\Documents\\RightArrow.png")  # needs to be whatever your directory is
+rightarrow = Image.open("//home//pi//touchscreen//Touchscreen_photos//RightArrow.png")  # needs to be whatever your directory is
 
 # adjusting right arrow size
 
 right_per = (arrow_height / float(rightarrow.size[0]))
 rightarrow = rightarrow.resize((arrow_height, height))
 rightarrowrender = ImageTk.PhotoImage(rightarrow)
-right_arr = Button(leftright, image=rightarrowrender, bg='black', borderwidth=0)
+right_arr = Button(leftright, image=rightarrowrender, bg='black', highlightthickness=0)
 
 right_arr.image = rightarrowrender
 right_arr.grid(row=0, column=1)
@@ -381,7 +442,7 @@ right_arr.grid(row=0, column=1)
 
 stock_height = 500
 stock = Frame(stream, bg='black')
-Sample_photo = Image.open("\\Users\\Matthew Scholar\\Documents\\Crowley.jpg")  # needs to be whatever your directory is
+Sample_photo = Image.open("//home//pi//touchscreen//Touchscreen_photos//Crowley.jpg")  # needs to be whatever your directory is
 crowley_per = stock_height / float(Sample_photo.size[0])
 width = int((float(Sample_photo.size[1]) * float(crowley_per)))
 Sample_photo = Sample_photo.resize((stock_height, width))
