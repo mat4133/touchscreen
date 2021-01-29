@@ -1,6 +1,8 @@
 from tkinter import *
 from tkinter import messagebox, _setit
 from PIL import Image, ImageTk
+from ttkthemes import ThemedStyle
+from tikinter import ttk
 import pickle
 import os
 
@@ -45,16 +47,29 @@ app = Tk()
 
 app.title('Streaming on a prayer')
 app.geometry('480x320')  # swap to fullscreen when using touchscreen
-app.configure(bg='black')
+
+#initializing style
+style = ThemedStyle(app)
+style.set_theme("equilux")
+
+#background colour from theme equilux
+bg = style.lookup('TFrame', 'background')
+fg = style.lookup('TFrame', 'foreground')
+app.configure(bg=style.lookup('TFrame', 'background'))
 
 # app.attributes('-fullscreen',True)
 
 # Setting up windows for application (main menu, settings, stream)
-main_menu = Frame(app, bg='black')
-settings = Frame(app, bg='black')
-stream = Frame(app, bg='black')
-tutorial = Frame(app, bg='black')
-wifi_login = Frame(app, bg='black')
+main_menu = Frame(app)
+main_menu.configure(bg=style.lookup('TFrame', 'background'))
+settings = Frame(app)
+settings.configure(bg=style.lookup('TFrame', 'background'))
+stream = Frame(app)
+stream.configure(bg=style.lookup('TFrame', 'background'))
+tutorial = Frame(app)
+tutorial.configure(bg=style.lookup('TFrame', 'background'))
+wifi_login = Frame(app)
+wifi_login.configure(bg=style.lookup('TFrame', 'background'))
 
 # setting up main menu
 main_menu.pack(padx=1, pady=1, expand=True, fill=BOTH)
@@ -99,17 +114,17 @@ main_menu.grid_rowconfigure(0, weight=3)
 main_menu.grid_columnconfigure((0, 1, 2), weight=1)
 
 # Adding buttons for going to the three windows
-set_btn = Button(main_menu, text="Settings", command=change_settings, font='14', bg='white')
+set_btn = ttk.Button(main_menu, text="SETTINGS", command=change_settings)
 set_btn.grid(column=1, row=1)
 
-stream_btn = Button(main_menu, text="Stream", command=change_stream, font='14', bg='white')
+stream_btn = ttk.Button(main_menu, text="STREAM", command=change_stream)
 stream_btn.grid(column=1, row=2)
 
-tutorial_btn = Button(main_menu, text="Tutorial", command=change_tutorial, font='14', bg='white')
+tutorial_btn = ttk.Button(main_menu, text="TUTORIAL", command=change_tutorial)
 tutorial_btn.grid(column=1, row=3)
 
-Menu_lbl = Label(main_menu, text="Main Menu", font='17', fg='white', bg='grey40')
-Menu_lbl.grid(column=0, row=0, sticky='nesw', columnspan=3)
+Menu_lbl = ttk.Label(main_menu, text="MAIN MENU")
+Menu_lbl.grid(column=1, row=0)
 
 # Settings display------------------------------------------------------------------------------------------------------
 
@@ -119,10 +134,10 @@ settings.grid_rowconfigure((0, 1, 2, 3, 4, 5, 6), weight=1)
 settings.grid_rowconfigure(7, weight=2)
 
 # Code for Wifi connection
-wifi_label = Label(settings, text='Wifi', bg='grey60', font=('bold', '12'))
-wifi_label.grid(column=0, row=0, sticky='nesw')
-wifi_connected = Label(settings, text='Unconnected', bg='grey60')
-wifi_connected.grid(column=1, row=0, sticky='nesw')
+wifi_label = ttk.Label(settings, text='WiFi')
+wifi_label.grid(column=0, row=0)
+wifi_connected = ttk.Label(settings, text='Unconnected')
+wifi_connected.grid(column=1, row=0)
 
 # Wifi login and code ----------------------------------------------------------------------
 
@@ -154,38 +169,38 @@ def wifi_connect():
 wifi_login.grid_rowconfigure((0,1,2,3), weight = 1)
 wifi_login.grid_columnconfigure((0,1), weight = 1)
 
-saved_lbl = Label(wifi_login, text='Saved Networks', )
-saved_lbl.grid(column=0,row=0, sticky='nesw')
+saved_lbl = ttk.Label(wifi_login, text='SAVED NETWORKS', )
+saved_lbl.grid(column=0,row=0)
 
 saved_networks = ['Placeholder']
 current_network = StringVar()
 current_network.set('Placeholder')
 
-saved_menu = OptionMenu(wifi_login, current_network, *saved_networks)
-saved_menu.grid(column=1,row=0, sticky='nesw')
+saved_menu = ttk.OptionMenu(wifi_login, current_network, *saved_networks)
+saved_menu.grid(column=1,row=0)
 
-username_lbl = Label(wifi_login, text='Username:')
-username_lbl.grid(column=0, row=1, sticky='nesw')
+username_lbl = ttk.Label(wifi_login, text='USERNAME:')
+username_lbl.grid(column=0, row=1)
 
-username_entr = Entry(wifi_login)
-username_entr.grid(column=1, row=1, sticky='nesw')
+username_entr = ttk.Entry(wifi_login)
+username_entr.grid(column=1, row=1)
 
-password_lbl = Label(wifi_login, text='Password:')
-password_lbl.grid(column=0, row=2, sticky='nesw')
+password_lbl = ttk.Label(wifi_login, text='PASSWORD:')
+password_lbl.grid(column=0, row=2)
 
-password_entr = Entry(wifi_login)
-password_entr.grid(column=1, row=2, sticky='nesw')
+password_entr = ttk.Entry(wifi_login)
+password_entr.grid(column=1, row=2)
 
-back_btn = Button(wifi_login, text='back', command=back_settings)
-back_btn.grid(column=0, row=3, sticky='nesw')
+back_btn = ttk.Button(wifi_login, text='BACK', command=back_settings)
+back_btn.grid(column=0, row=3)
 
-connect_btn = Button(wifi_login, text='Connect (and save)')
-connect_btn.grid(column=1, row=3, sticky='nesw')
+connect_btn = ttk.Button(wifi_login, text='CONNECT / SAVE')
+connect_btn.grid(column=1, row=3)
 
 #Settings frame--------------------------------------------------------------------------------------
 
-wifi_button = Button(settings, text='Connect', command=change_wifi)
-wifi_button.grid(column=2, row=0, sticky='nesw')
+wifi_button = ttk.Button(settings, text='Connect', command=change_wifi)
+wifi_button.grid(column=2, row=0)
 
 # code for saving and importing streams
 
@@ -258,52 +273,52 @@ current_codetext = code_list[0]
 
 
 # current stream key should be the last used stream key (if any)
-stream_label = Label(settings, text='Current stream code:', bg='grey60', font=('bold', '12'))
-stream_label.grid(column=0, row=1, sticky='nesw')
-current_code = Label(settings, text=current_codetext, bg='grey60')
-current_code.grid(column=1, row=1, sticky='nesw', columnspan=2)
+stream_label = ttk.Label(settings, text='Current stream code:')
+stream_label.grid(column=0, row=1)
+current_code = ttk.Label(settings, text=current_codetext)
+current_code.grid(column=1, row=1, columnspan=2)
 
 # user to input stream key
-stream_inputlabel = Label(settings, text='Enter new stream code:', bg='grey60', font=('bold', '12'))
-stream_inputlabel.grid(column=0, row=2, sticky='nesw')
-stream_code = Entry(settings)
-stream_code.grid(column=1, row=2, sticky='nesw')
-stream_enter = Button(settings, text='Use code', command=enter_code)
-stream_enter.grid(column=2, row=2, sticky='nesw')
+stream_inputlabel = ttk.Label(settings, text='Enter new stream code:')
+stream_inputlabel.grid(column=0, row=2)
+stream_code = ttk.Entry(settings)
+stream_code.grid(column=1, row=2)
+stream_enter = ttk.Button(settings, text='Use code', command=enter_code)
+stream_enter.grid(column=2, row=2)
 
 # User to choose stream key (should appear in order of last used)
-stream_p_label = Label(settings, text="Previous stream codes:", bg='grey60', font=('bold', 12))
-stream_p_label.grid(column=0, row=3, sticky='nesw')
+stream_p_label = ttk.Label(settings, text="Previous stream codes:")
+stream_p_label.grid(column=0, row=3)
 value = StringVar()
 value.set(current_codetext)  # Setting the key (should be last key used)
-existing_codes = OptionMenu(settings, value, *code_list)
-existing_codes.grid(column=1, row=3, sticky='nesw')
-stream_p_enter = Button(settings, text="Use code", command=change_code)
-stream_p_enter.grid(column=2, row=3, sticky='nesw')
+existing_codes = ttk.OptionMenu(settings, value, *code_list)
+existing_codes.grid(column=1, row=3)
+stream_p_enter = ttk.Button(settings, text="Use code", command=change_code)
+stream_p_enter.grid(column=2, row=3)
 
 # Clearing list of stream codes
-clear_label = Label(settings, text='Clear saved stream codes:', bg='grey60', font=('bold', 12))
-clear_label.grid(column=0, row=4, sticky='nesw')
-clr_lbl_bck = Label(settings, text='', bg='grey60')
-clr_lbl_bck.grid(column=1, row=4, columnspan=2, sticky='nesw')
-clear_button = Button(settings, text='Clear codes', command=clear_code)
+clear_label = ttk.Label(settings, text='Clear saved stream codes:')
+clear_label.grid(column=0, row=4)
+clr_lbl_bck = ttk.Label(settings, text='')
+clr_lbl_bck.grid(column=1, row=4, columnspan=2)
+clear_button = ttk.Button(settings, text='Clear codes', command=clear_code)
 clear_button.grid(column=1, row=4, columnspan=2)
 
 # Allow stream w_out audio?
 chk_state = IntVar()
 chk_state.set(False)
-audio_chklbl = Label(settings, text='Allow streaming without audio:', bg='grey60', font=('bold', '12'))
-audio_chklbl.grid(column=0, row=5, sticky='nesw')
-audio_chk = Checkbutton(settings, var=chk_state, bg='grey60')
-audio_chk.grid(column=1, row=5, sticky='nesw', columnspan=2)
+audio_chklbl = ttk.Label(settings, text='Allow streaming without audio:')
+audio_chklbl.grid(column=0, row=5)
+audio_chk = ttk.Checkbutton(settings, var=chk_state)
+audio_chk.grid(column=1, row=5, columnspan=2)
 
 # Code for delay_option
-delay_lbl = Label(settings, text="Audio-video delay (Milliseconds)", bg='grey60', font=('bold', '12'))
-delay_lbl.grid(column=0, row=6, sticky='nesw')
-BckLbl = Label(settings, text='', bg='grey60')
-BckLbl.grid(column=1, row=6, sticky='nesw', columnspan=2)
+delay_lbl = ttk.Label(settings, text="Audio-video delay (Milliseconds)")
+delay_lbl.grid(column=0, row=6)
+BckLbl = ttk.Label(settings, text='')
+BckLbl.grid(column=1, row=6, columnspan=2)
 var = DoubleVar(value=200)  # initial value
-delay = Spinbox(settings, from_=-5000, to=5000, increment=20, textvariable=var)
+delay = ttk.Spinbox(settings, from_=-5000, to=5000, increment=20, textvariable=var)
 delay.grid(column=1, row=6, columnspan=2)
 
 
@@ -315,7 +330,7 @@ def main_return():
 
 
 # Button to deal with return to main menu
-main_menur = Button(settings, text="Main menu", command=main_return)
+main_menur = ttk.Button(settings, text="Main menu", command=main_return)
 main_menur.grid(column=0, row=7, columnspan=3, rowspan=2)
 
 # Stream display--------------------------------------------------------------------------------------------------------
@@ -367,8 +382,12 @@ def stop_stream():
 
 
 # Go button
-go_btn = Button(stream, text='Go', command=start_stream, bg='green')
-go_btn.grid(column=1, row=1, sticky='nesw')
+go_btn = ttk.Button(stream, text='Go', command=start_stream)
+go_btn.grid(column=1, row=1)
+
+# Button to deal with return to main menu from stream screen
+#main_menur = ttk.Button(stream, text="Main menu", command=main_return)
+#main_menur.grid(column=1, row=1)
 
 # Buttons for panning on screen
 arrow_width = 75
@@ -376,10 +395,10 @@ arrow_height = 60
 
 # Buttons for panning up and down
 
-updown = Frame(stream, bg='black')
+updown = Frame(stream, bg=style.lookup('TFrame', 'background'))
 
 # Setting up frame for up/down arrows
-updown.grid(column=1, row=0, sticky='nesw')
+updown.grid(column=1, row=0)
 updown.columnconfigure(0, weight=1)
 updown.rowconfigure((0, 1), weight=1)
 
@@ -391,7 +410,7 @@ height = int((float(uparrow.size[1]) * float(up_per)))
 uparrow = uparrow.resize((arrow_width, height))
 uparrowrender = ImageTk.PhotoImage(uparrow)
 
-up_arr = Button(updown, image=uparrowrender, bg='black', highlightthickness=0)
+up_arr = ttk.Button(updown, image=uparrowrender)
 up_arr.image = uparrowrender
 up_arr.grid(column=0, row=0)
 
@@ -403,15 +422,15 @@ height = int((float(downarrow.size[1]) * float(down_per)))
 downarrow = downarrow.resize((arrow_width, height))
 downarrowrender = ImageTk.PhotoImage(downarrow)
 
-down_arr = Button(updown, image=downarrowrender, bg='black', highlightthickness=0)
+down_arr = ttk.Button(updown, image=downarrowrender)
 down_arr.image = downarrowrender
 down_arr.grid(column=0, row=1)
 
 # buttons for panning left/right
 
 # Setting up frame for left/right arrows
-leftright = Frame(stream, bg='black')
-leftright.grid(column=0, row=1, sticky='nesw')
+leftright = Frame(stream, bg=style.lookup('TFrame', 'background'))
+leftright.grid(column=0, row=1)
 leftright.grid_columnconfigure((0, 1), weight=1)
 leftright.grid_rowconfigure(0, weight=1)
 
@@ -422,7 +441,7 @@ left_per = (arrow_height / float(leftarrow.size[0]))
 height = int((float(leftarrow.size[1]) * float(left_per)))
 leftarrow = leftarrow.resize((arrow_height, height))
 leftarrowrender = ImageTk.PhotoImage(leftarrow)
-left_arr = Button(leftright, image=leftarrowrender, bg='black', highlightthickness=0)
+left_arr = ttk.Button(leftright, image=leftarrowrender)
 
 left_arr.image = leftarrowrender
 left_arr.grid(row=0, column=0)
@@ -434,7 +453,7 @@ rightarrow = Image.open("//home//pi//touchscreen//Touchscreen_photos//RightArrow
 right_per = (arrow_height / float(rightarrow.size[0]))
 rightarrow = rightarrow.resize((arrow_height, height))
 rightarrowrender = ImageTk.PhotoImage(rightarrow)
-right_arr = Button(leftright, image=rightarrowrender, bg='black', highlightthickness=0)
+right_arr = ttk.Button(leftright, image=rightarrowrender)
 
 right_arr.image = rightarrowrender
 right_arr.grid(row=0, column=1)
@@ -442,7 +461,7 @@ right_arr.grid(row=0, column=1)
 # Sample picture (for where steam will go)
 
 stock_height = 500
-stock = Frame(stream, bg='black')
+stock = Frame(stream, bg=style.lookup('TFrame', 'background'))
 Sample_photo = Image.open("//home//pi//touchscreen//Touchscreen_photos//Crowley.jpg")  # needs to be whatever your directory is
 crowley_per = stock_height / float(Sample_photo.size[0])
 width = int((float(Sample_photo.size[1]) * float(crowley_per)))
@@ -455,10 +474,14 @@ stock.grid(column=0, row=0)
 
 # Tutorial section
 
-rick_roll = Label(tutorial, text="""Guide to using this touchscreen explaining what a stream key 
+rick_roll = ttk.Label(tutorial, text="""Guide to using this touchscreen explaining what a stream key 
 is,how the process works (i.e. that they need wifi, a video and audio device connected and a valid stream key. Also will 
 explain what the delay between audio/video is and why it is necessary,
 along with other necessary things...""", bg='black', foreground='white')
 rick_roll.pack(fill=BOTH)
+
+# Button to deal with return to main menu from tutorial screen
+#main_menur = ttk.Button(tutorial, text="Main menu", command=main_return)
+#main_menur.grid(column=1, row=1)
 
 app.mainloop()
