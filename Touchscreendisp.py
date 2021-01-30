@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter import messagebox, _setit
 from PIL import Image, ImageTk
 from ttkthemes import ThemedStyle
-from tikinter import ttk
+from tkinter import ttk
 import pickle
 import os
 
@@ -43,10 +43,16 @@ video_connection = 0
 # to crash when you run it)
 
 
+
+screen_size = 0 #to switch between 320x240, and 480x320 (0 is 320x240) 
+
 app = Tk()
 
 app.title('Streaming on a prayer')
-app.geometry('480x320')  # swap to fullscreen when using touchscreen
+if screen_size == 0:
+    app.geometry('320x240')  # swap to fullscreen when using touchscreen
+else:
+    app.geometry('480x320')
 
 #initializing style
 style = ThemedStyle(app)
@@ -60,8 +66,6 @@ app.configure(bg=style.lookup('TFrame', 'background'))
 # app.attributes('-fullscreen',True)
 
 # Setting up windows for application (main menu, settings, stream)
-main_menu = Frame(app)
-main_menu.configure(bg=style.lookup('TFrame', 'background'))
 settings = Frame(app)
 settings.configure(bg=style.lookup('TFrame', 'background'))
 stream = Frame(app)
@@ -72,25 +76,18 @@ wifi_login = Frame(app)
 wifi_login.configure(bg=style.lookup('TFrame', 'background'))
 
 # setting up main menu
-main_menu.pack(padx=1, pady=1, expand=True, fill=BOTH)
+stream.pack(padx=1, pady=1, expand=True, fill=BOTH)
 
 
-# Changing from main menu to settings screen
+# Changing from stream to settings screen
 def change_settings():
-    main_menu.pack_forget()
+    stream.pack_forget()
     settings.pack(padx=0, pady=0, expand=True, fill=BOTH)
-    # Insert code to check whether the user is connected to the internet
 
 
-# Changing from main menu to stream screen
-def change_stream():
-    main_menu.pack_forget()
-    stream.pack(padx=0, pady=0, expand=True, fill=BOTH)
-
-
-# main menu to tutorial screen
+# stream to tutorial screen
 def change_tutorial():
-    main_menu.pack_forget()
+    stream.pack_forget()
     tutorial.pack(padx=0, pady=0, expand=TRUE, fill=BOTH)
     
 # settings to wifi login    
@@ -109,27 +106,34 @@ def back_settings():
 # need to add diocese of durham + durham uni logos
 # (use PIL and copy resizing process used for arrows below to make your life easier [or I can add them in if you want])
 
+"""
 main_menu.grid_rowconfigure((1, 2, 3), weight=2)
 main_menu.grid_rowconfigure(0, weight=3)
 main_menu.grid_columnconfigure((0, 1, 2), weight=1)
+"""
 
 # Adding buttons for going to the three windows
-set_btn = ttk.Button(main_menu, text="SETTINGS", command=change_settings)
-set_btn.grid(column=1, row=1)
+set_btn = ttk.Button(stream, text="SETTINGS", command=change_settings)
+set_btn.grid(column=0, row=0, sticky='nesw')
 
+"""
 stream_btn = ttk.Button(main_menu, text="STREAM", command=change_stream)
 stream_btn.grid(column=1, row=2)
+"""
 
-tutorial_btn = ttk.Button(main_menu, text="TUTORIAL", command=change_tutorial)
-tutorial_btn.grid(column=1, row=3)
+tutorial_btn = ttk.Button(stream, text="TUTORIAL", command=change_tutorial)
+tutorial_btn.grid(column=1, row=0, sticky='nesw')
 
-Menu_lbl = ttk.Label(main_menu, text="MAIN MENU")
+"""
+Menu_lbl = ttk.Label(stream, text="MAIN MENU")
 Menu_lbl.grid(column=1, row=0)
+"""
 
 # Settings display------------------------------------------------------------------------------------------------------
 
 # Configuring grid layout for settings window
-settings.grid_columnconfigure(0, weight=1)
+settings.grid_columnconfigure(0, weight=2)
+settings.grid_columnconfigure((1,2), weight=1)
 settings.grid_rowconfigure((0, 1, 2, 3, 4, 5, 6), weight=1)
 settings.grid_rowconfigure(7, weight=2)
 
@@ -273,47 +277,47 @@ current_codetext = code_list[0]
 
 
 # current stream key should be the last used stream key (if any)
-stream_label = ttk.Label(settings, text='Current stream code:')
+stream_label = ttk.Label(settings, text='Current stream key:')
 stream_label.grid(column=0, row=1)
 current_code = ttk.Label(settings, text=current_codetext)
 current_code.grid(column=1, row=1, columnspan=2)
 
 # user to input stream key
-stream_inputlabel = ttk.Label(settings, text='Enter new stream code:')
+stream_inputlabel = ttk.Label(settings, text='Enter key:')
 stream_inputlabel.grid(column=0, row=2)
 stream_code = ttk.Entry(settings)
 stream_code.grid(column=1, row=2)
-stream_enter = ttk.Button(settings, text='Use code', command=enter_code)
+stream_enter = ttk.Button(settings, text='Use key', command=enter_code)
 stream_enter.grid(column=2, row=2)
 
 # User to choose stream key (should appear in order of last used)
-stream_p_label = ttk.Label(settings, text="Previous stream codes:")
+stream_p_label = ttk.Label(settings, text="Saved keys:")
 stream_p_label.grid(column=0, row=3)
 value = StringVar()
 value.set(current_codetext)  # Setting the key (should be last key used)
 existing_codes = ttk.OptionMenu(settings, value, *code_list)
 existing_codes.grid(column=1, row=3)
-stream_p_enter = ttk.Button(settings, text="Use code", command=change_code)
+stream_p_enter = ttk.Button(settings, text="Use key", command=change_code)
 stream_p_enter.grid(column=2, row=3)
 
 # Clearing list of stream codes
-clear_label = ttk.Label(settings, text='Clear saved stream codes:')
+clear_label = ttk.Label(settings, text='Clear keys:')
 clear_label.grid(column=0, row=4)
 clr_lbl_bck = ttk.Label(settings, text='')
 clr_lbl_bck.grid(column=1, row=4, columnspan=2)
-clear_button = ttk.Button(settings, text='Clear codes', command=clear_code)
+clear_button = ttk.Button(settings, text='Clear keys', command=clear_code)
 clear_button.grid(column=1, row=4, columnspan=2)
 
 # Allow stream w_out audio?
 chk_state = IntVar()
 chk_state.set(False)
-audio_chklbl = ttk.Label(settings, text='Allow streaming without audio:')
+audio_chklbl = ttk.Label(settings, text='Audioless streaming:')
 audio_chklbl.grid(column=0, row=5)
 audio_chk = ttk.Checkbutton(settings, var=chk_state)
 audio_chk.grid(column=1, row=5, columnspan=2)
 
 # Code for delay_option
-delay_lbl = ttk.Label(settings, text="Audio-video delay (Milliseconds)")
+delay_lbl = ttk.Label(settings, text="Audio-video delay:")
 delay_lbl.grid(column=0, row=6)
 BckLbl = ttk.Label(settings, text='')
 BckLbl.grid(column=1, row=6, columnspan=2)
@@ -324,19 +328,21 @@ delay.grid(column=1, row=6, columnspan=2)
 
 # return to main_menu
 
-def main_return():
+def stream_return():
     settings.pack_forget()
-    main_menu.pack(padx=1, pady=1, expand=True, fill=BOTH)
+    stream.pack(padx=1, pady=1, expand=True, fill=BOTH)
 
 
 # Button to deal with return to main menu
-main_menur = ttk.Button(settings, text="Main menu", command=main_return)
+main_menur = ttk.Button(settings, text="Stream", command=stream_return)
 main_menur.grid(column=0, row=7, columnspan=3, rowspan=2)
 
 # Stream display--------------------------------------------------------------------------------------------------------
 
-stream.grid_rowconfigure(0, weight=4)
-stream.grid_columnconfigure(0, weight=4)
+stream.grid_rowconfigure((0,3), weight=2)
+stream.grid_rowconfigure((1,2), weight=3)
+stream.grid_columnconfigure((0,1), weight=1)
+stream.grid_rowconfigure(1, weight=4)
 
 
 def start_stream():
@@ -383,26 +389,27 @@ def stop_stream():
 
 # Go button
 go_btn = ttk.Button(stream, text='Go', command=start_stream)
-go_btn.grid(column=1, row=1)
+go_btn.grid(column=2, row=3)
 
 # Button to deal with return to main menu from stream screen
 #main_menur = ttk.Button(stream, text="Main menu", command=main_return)
 #main_menur.grid(column=1, row=1)
 
 # Buttons for panning on screen
-arrow_width = 75
-arrow_height = 60
 
-# Buttons for panning up and down
+#60 and 50 for big screen
 
-updown = Frame(stream, bg=style.lookup('TFrame', 'background'))
+if screen_size == 0:
+    arrow_width = 40
+    arrow_height = 40
+else:
+    arrow_width = 60
+    arrow_height = 50
+
 
 # Setting up frame for up/down arrows
-updown.grid(column=1, row=0)
-updown.columnconfigure(0, weight=1)
-updown.rowconfigure((0, 1), weight=1)
 
-uparrow = Image.open("//home//pi//touchscreen//Touchscreen_photos//UpArrow.png")  # needs to be whatever your directory is
+uparrow = Image.open("\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\UpArrow.png")  # needs to be whatever your directory is
 
 # adjusting up arrow size
 up_per = (arrow_width / float(uparrow.size[0]))
@@ -410,11 +417,11 @@ height = int((float(uparrow.size[1]) * float(up_per)))
 uparrow = uparrow.resize((arrow_width, height))
 uparrowrender = ImageTk.PhotoImage(uparrow)
 
-up_arr = ttk.Button(updown, image=uparrowrender)
+up_arr = ttk.Button(stream, image=uparrowrender)
 up_arr.image = uparrowrender
-up_arr.grid(column=0, row=0)
+up_arr.grid(column=2, row=1)
 
-downarrow = Image.open("//home//pi//touchscreen//Touchscreen_photos//DownArrow.png")  # needs to be whatever your directory is
+downarrow = Image.open("\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\DownArrow.png")  # needs to be whatever your directory is
 
 # adjusting down arrow size
 down_per = (arrow_width / float(downarrow.size[0]))
@@ -422,62 +429,63 @@ height = int((float(downarrow.size[1]) * float(down_per)))
 downarrow = downarrow.resize((arrow_width, height))
 downarrowrender = ImageTk.PhotoImage(downarrow)
 
-down_arr = ttk.Button(updown, image=downarrowrender)
+down_arr = ttk.Button(stream, image=downarrowrender)
 down_arr.image = downarrowrender
-down_arr.grid(column=0, row=1)
+down_arr.grid(column=2, row=2)
 
 # buttons for panning left/right
 
 # Setting up frame for left/right arrows
-leftright = Frame(stream, bg=style.lookup('TFrame', 'background'))
-leftright.grid(column=0, row=1)
-leftright.grid_columnconfigure((0, 1), weight=1)
-leftright.grid_rowconfigure(0, weight=1)
 
-leftarrow = Image.open("//home//pi//touchscreen//Touchscreen_photos//LeftArrow.png")  # needs to be whatever your directory is
+leftarrow = Image.open("\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\LeftArrow.png")  # needs to be whatever your directory is
 
 # adjusting left arrow size
 left_per = (arrow_height / float(leftarrow.size[0]))
 height = int((float(leftarrow.size[1]) * float(left_per)))
 leftarrow = leftarrow.resize((arrow_height, height))
 leftarrowrender = ImageTk.PhotoImage(leftarrow)
-left_arr = ttk.Button(leftright, image=leftarrowrender)
+left_arr = ttk.Button(stream, image=leftarrowrender)
 
 left_arr.image = leftarrowrender
-left_arr.grid(row=0, column=0)
+left_arr.grid(row=3, column=0)
 
-rightarrow = Image.open("//home//pi//touchscreen//Touchscreen_photos//RightArrow.png")  # needs to be whatever your directory is
+rightarrow = Image.open("\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\RightArrow.png")  # needs to be whatever your directory is
 
 # adjusting right arrow size
 
 right_per = (arrow_height / float(rightarrow.size[0]))
 rightarrow = rightarrow.resize((arrow_height, height))
 rightarrowrender = ImageTk.PhotoImage(rightarrow)
-right_arr = ttk.Button(leftright, image=rightarrowrender)
+right_arr = ttk.Button(stream, image=rightarrowrender)
 
 right_arr.image = rightarrowrender
-right_arr.grid(row=0, column=1)
+right_arr.grid(row=3, column=1)
 
 # Sample picture (for where steam will go)
 
-stock_height = 500
+#400 for big, 300 for small
+if screen_size == 0:
+    stock_height = 300
+else:
+    stock_height = 400
+
 stock = Frame(stream, bg=style.lookup('TFrame', 'background'))
-Sample_photo = Image.open("//home//pi//touchscreen//Touchscreen_photos//Crowley.jpg")  # needs to be whatever your directory is
+Sample_photo = Image.open("\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\Crowley.jpg")  # needs to be whatever your directory is
 crowley_per = stock_height / float(Sample_photo.size[0])
 width = int((float(Sample_photo.size[1]) * float(crowley_per)))
 Sample_photo = Sample_photo.resize((stock_height, width))
 crowley = ImageTk.PhotoImage(Sample_photo)
-aziraphale = Label(stock, image=crowley, bg='black')
+aziraphale = Label(stock, image=crowley, bg='#484848')
 aziraphale.image = crowley
 aziraphale.pack()
-stock.grid(column=0, row=0)
+stock.grid(column=0, row=1, columnspan=2, rowspan=2)
 
 # Tutorial section
 
 rick_roll = ttk.Label(tutorial, text="""Guide to using this touchscreen explaining what a stream key 
 is,how the process works (i.e. that they need wifi, a video and audio device connected and a valid stream key. Also will 
 explain what the delay between audio/video is and why it is necessary,
-along with other necessary things...""", bg='black', foreground='white')
+along with other necessary things...""")
 rick_roll.pack(fill=BOTH)
 
 # Button to deal with return to main menu from tutorial screen
