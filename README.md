@@ -20,3 +20,4 @@ Tasks still to complete/would be nice to do: (please tick these off as appropria
 
 IMPORTANT NOTES:
 - YOU WILL NEED TO DOWNLOAD PHOTOS AND CHANGE THEIR DIRECTORIES FOR CODE TO RUN
+- Switch between 0,1 at the start of the code where it says screen size to change between the smaller display we're planning to you and my (Matthew) touchscreen size. 
