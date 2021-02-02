@@ -1,8 +1,8 @@
 from tkinter import *
-from tkinter import messagebox, _setit
+from tkinter import messagebox, _setit, ttk
 from PIL import Image, ImageTk
 from ttkthemes import ThemedStyle
-from tkinter import ttk
+from Keyboard import create_keyboard, keyboard_on
 import pickle
 import os
 
@@ -42,9 +42,7 @@ video_connection = 0
 # SITA (i have removed the connection between the wifi button and anything so it calls nothing (and hence won't cause it
 # to crash when you run it)
 
-
-
-screen_size = 0 #to switch between 320x240, and 480x320 (0 is 320x240) 
+screen_size = 1 #to switch between 320x240, and 480x320 (0 is 320x240)
 
 app = Tk()
 
@@ -76,14 +74,16 @@ wifi_login = Frame(app)
 wifi_login.configure(bg=style.lookup('TFrame', 'background'))
 
 # setting up main menu
-stream.pack(padx=1, pady=1, expand=True, fill=BOTH)
-
+stream.pack(padx=0, pady=0, expand=True, fill=BOTH)
 
 # Changing from stream to settings screen
 def change_settings():
     stream.pack_forget()
     settings.pack(padx=0, pady=0, expand=True, fill=BOTH)
 
+def back_tutorial():
+    tutorial.pack_forget()
+    stream.pack(padx=0, pady=0, expand=True, fill=BOTH)
 
 # stream to tutorial screen
 def change_tutorial():
@@ -100,8 +100,7 @@ def back_settings():
     wifi_login.pack_forget()
     settings.pack(padx=0, pady=0, expand=TRUE, fill=BOTH)
 
-
-# Main menu display (three buttons directing user to settings and then streaming)--------------------------------------
+# Main menu display (now removed)--------------------------------------------------------------------------------------
 
 # need to add diocese of durham + durham uni logos
 # (use PIL and copy resizing process used for arrows below to make your life easier [or I can add them in if you want])
@@ -170,6 +169,40 @@ def wifi_connect():
 
 '''
 
+def username_space_wifi(*args):
+    back_btn.grid_forget()
+    connect_btn.grid_forget()
+    password_lbl.grid_forget()
+    password_entr.grid_forget()
+    keyboard_on(keyboard_frame2.children['!frame'])
+
+def username_keyboard_off(current_frame):
+    current_frame.grid_forget()
+    keyboard_frame2.grid_forget()
+    back_btn.grid(column=0, row=3)
+    connect_btn.grid(column=1, row=3)
+    password_lbl.grid(column=0, row=2)
+    password_entr.grid(column=1, row=2)
+
+def password_space_wifi(*args):
+    back_btn.grid_forget()
+    connect_btn.grid_forget()
+    username_entr.grid_forget()
+    username_lbl.grid_forget()
+    password_entr.grid(column=1, row=1)
+    password_lbl.grid(column=0, row=1)
+    keyboard_on(keyboard_frame3.children['!frame'])
+
+def password_keyboard_off(current_frame):
+    current_frame.grid_forget()
+    keyboard_frame3.grid_forget()
+    password_entr.grid(column=1, row=2)
+    password_lbl.grid(column=0,row=2)
+    username_entr.grid(column=1, row=1)
+    username_lbl.grid(column=0, row=1)
+    back_btn.grid(column=0, row=3)
+    connect_btn.grid(column=1, row=3)
+
 wifi_login.grid_rowconfigure((0,1,2,3), weight = 1)
 wifi_login.grid_columnconfigure((0,1), weight = 1)
 
@@ -186,20 +219,40 @@ saved_menu.grid(column=1,row=0)
 username_lbl = ttk.Label(wifi_login, text='USERNAME:')
 username_lbl.grid(column=0, row=1)
 
-username_entr = ttk.Entry(wifi_login)
+username_text = StringVar()
+username_entr = ttk.Entry(wifi_login, textvariable = username_text )
 username_entr.grid(column=1, row=1)
+username_entr.bind("<Button>", username_space_wifi)
 
 password_lbl = ttk.Label(wifi_login, text='PASSWORD:')
 password_lbl.grid(column=0, row=2)
 
-password_entr = ttk.Entry(wifi_login)
+password_text = StringVar()
+password_entr = ttk.Entry(wifi_login, textvariable = password_text)
 password_entr.grid(column=1, row=2)
+password_entr.bind("<Button>", password_space_wifi)
 
 back_btn = ttk.Button(wifi_login, text='BACK', command=back_settings)
 back_btn.grid(column=0, row=3)
 
 connect_btn = ttk.Button(wifi_login, text='CONNECT / SAVE')
 connect_btn.grid(column=1, row=3)
+
+keyboard_frame2 = Frame(wifi_login)
+keyboard_frame2.configure(bg=style.lookup('TFrame', 'background'))
+keyboard_frame2.grid(column=0, row=2, columnspan=2, rowspan=2)
+keyboard_frame2.rowconfigure(0,weight=1)
+keyboard_frame2.columnconfigure(0,weight=1)
+
+keyboard_frame2 = create_keyboard(keyboard_frame2, username_entr, username_text, style, username_keyboard_off)
+
+keyboard_frame3 = Frame(wifi_login)
+keyboard_frame3.configure(bg=style.lookup('TFrame', 'background'))
+keyboard_frame3.grid(column=0, row=2, columnspan=2, rowspan=2)
+keyboard_frame3.rowconfigure(0, weight=1)
+keyboard_frame3.columnconfigure(0, weight=1)
+
+keyboard_frame3 = create_keyboard(keyboard_frame3, password_entr, password_text, style, password_keyboard_off)
 
 #Settings frame--------------------------------------------------------------------------------------
 
@@ -270,11 +323,9 @@ def change_code():
     chosen_code = value.get()
     current_code['text'] = chosen_code
 
-
 # check to make see if this is the first time (check list in file is not empty, if empty have none come up)
 
 current_codetext = code_list[0]
-
 
 # current stream key should be the last used stream key (if any)
 stream_label = ttk.Label(settings, text='Current stream key:')
@@ -282,13 +333,49 @@ stream_label.grid(column=0, row=1)
 current_code = ttk.Label(settings, text=current_codetext)
 current_code.grid(column=1, row=1, columnspan=2)
 
+# function to clear space for keyboard
+def keyboard_space_settings(*args):
+    clear_label.grid_forget()
+    clr_lbl_bck.grid_forget()
+    clear_button.grid_forget()
+    audio_chklbl.grid_forget()
+    audio_chk.grid_forget()
+    delay_lbl.grid_forget()
+    BckLbl.grid_forget()
+    delay.grid_forget()
+    main_menur.grid_forget()
+
+    keyboard_on(keyboard_frame1.children['!frame'])
+
+def reset_page(current_frame):
+    current_frame.grid_forget()
+    clear_label.grid(column=0, row=4)
+    clr_lbl_bck.grid(column=1, row=4, columnspan=2)
+    audio_chklbl.grid(column=0, row=5)
+    audio_chk.grid(column=1, row=5, columnspan=2)
+    clear_button.grid(column=1, row=4, columnspan=2)
+    delay_lbl.grid(column=0, row=6)
+    BckLbl.grid(column=1, row=6, columnspan=2)
+    delay.grid(column=1, row=6, columnspan=2)
+    main_menur.grid(column=0, row=7, columnspan=3, rowspan=2)
+
 # user to input stream key
 stream_inputlabel = ttk.Label(settings, text='Enter key:')
 stream_inputlabel.grid(column=0, row=2)
-stream_code = ttk.Entry(settings)
+stream_text = StringVar()
+stream_code = ttk.Entry(settings, textvariable=stream_text)
+stream_code.bind("<Button>",keyboard_space_settings)
 stream_code.grid(column=1, row=2)
 stream_enter = ttk.Button(settings, text='Use key', command=enter_code)
 stream_enter.grid(column=2, row=2)
+
+keyboard_frame1 = Frame(settings)
+keyboard_frame1.configure(bg=style.lookup('TFrame', 'background'))
+keyboard_frame1.grid(column=0, row=4, columnspan=3, rowspan=4)
+keyboard_frame1.rowconfigure(0, weight=1)
+keyboard_frame1.columnconfigure(0, weight=1)
+
+keyboard_frame1 = create_keyboard(keyboard_frame1,stream_code,stream_text,style,reset_page)
 
 # User to choose stream key (should appear in order of last used)
 stream_p_label = ttk.Label(settings, text="Saved keys:")
@@ -487,6 +574,9 @@ is,how the process works (i.e. that they need wifi, a video and audio device con
 explain what the delay between audio/video is and why it is necessary,
 along with other necessary things...""")
 rick_roll.pack(fill=BOTH)
+
+stream_btn = ttk.Button(tutorial, text="Stream",command=back_tutorial)
+stream_btn.pack()
 
 # Button to deal with return to main menu from tutorial screen
 #main_menur = ttk.Button(tutorial, text="Main menu", command=main_return)
