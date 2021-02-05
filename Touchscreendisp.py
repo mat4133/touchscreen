@@ -42,6 +42,7 @@ video_connection = 0
 # SITA (i have removed the connection between the wifi button and anything so it calls nothing (and hence won't cause it
 # to crash when you run it)
 
+
 screen_size = 1 #to switch between 320x240, and 480x320 (0 is 320x240)
 
 app = Tk()
@@ -72,6 +73,8 @@ tutorial = Frame(app)
 tutorial.configure(bg=style.lookup('TFrame', 'background'))
 wifi_login = Frame(app)
 wifi_login.configure(bg=style.lookup('TFrame', 'background'))
+settings2 = Frame(app)
+settings2.configure(bg=style.lookup('TFrame','background'))
 
 # setting up main menu
 stream.pack(padx=0, pady=0, expand=True, fill=BOTH)
@@ -419,10 +422,42 @@ def stream_return():
     settings.pack_forget()
     stream.pack(padx=1, pady=1, expand=True, fill=BOTH)
 
+def stream_return2():
+    settings2.pack_forget()
+    stream.pack(padx=1, pady=1, expand=True, fill=BOTH)
+
+def more_settings():
+    settings.pack_forget()
+    settings2.pack(padx=1,pady=1,expand=True, fill=BOTH)
 
 # Button to deal with return to main menu
 main_menur = ttk.Button(settings, text="Stream", command=stream_return)
-main_menur.grid(column=0, row=7, columnspan=3, rowspan=2)
+main_menur.grid(column=0, row=7, columnspan=2, rowspan=2)
+
+more_settings = ttk.Button(settings, text="More settings", command=more_settings)
+more_settings.grid(column=2, row=7, rowspan=2)
+
+# More settings ---------------------------------------------------------------------------------------------
+
+settings2.rowconfigure((0,1,2), weight=1)
+settings2.columnconfigure((0,1), weight=1)
+
+frame_rate = DoubleVar()
+frame_rate_label = ttk.Label(settings2, text='Frame Rate:')
+frame_rate_scroller = ttk.Spinbox(settings2, from_= 0, to=100, textvariable=frame_rate)
+frame_rate_scroller.grid(column=1, row=0)
+frame_rate_label.grid(column=0, row=0)
+
+bit_rate = DoubleVar()
+bit_rate_label = ttk.Label(settings2, text='Bit Rate: ')
+bit_rate_scroller = ttk.Spinbox(settings2, from_= 0, to=100, textvariable=bit_rate)
+bit_rate_label.grid(column=0, row=1)
+bit_rate_scroller.grid(column=1, row=1)
+
+stream_button = ttk.Button(settings2, text='Stream', command=stream_return2)
+stream_button.grid(columnspan=2, column=0, row=2)
+
+
 
 # Stream display--------------------------------------------------------------------------------------------------------
 
@@ -482,6 +517,44 @@ go_btn.grid(column=2, row=3)
 #main_menur = ttk.Button(stream, text="Main menu", command=main_return)
 #main_menur.grid(column=1, row=1)
 
+def zoom():
+
+    zoom_button.grid_forget()
+    pan_button.grid(column=2,row=0)
+
+    up_arr.grid_forget()
+    down_arr.grid_forget()
+    left_arr.grid_forget()
+    right_arr.grid_forget()
+
+    zoom_in.grid(rowspan=2, row=1, column=2)
+    zoom_out.grid(columnspan=2, row=3, column=0)
+
+def pan():
+
+    pan_button.grid_forget()
+    zoom_in.grid_forget()
+    zoom_out.grid_forget()
+
+    zoom_button.grid(column=2,row=0)
+    up_arr.grid(column=2, row=1)
+    down_arr.grid(column=2,row=2)
+    left_arr.grid(row=3, column=0)
+    right_arr.grid(row=3, column=1)
+
+# Button to change from panning to zooming in/out
+
+zoom_button = ttk.Button(stream,text='Zoom', command=zoom)
+zoom_button.grid(column=2,row=0)
+
+pan_button = ttk.Button(stream,text='Pan', command=pan)
+
+#Buttons for zooming/in out
+
+zoom_in = ttk.Button(stream, text='Zoom in')
+
+zoom_out = ttk.Button(stream, text='Zoom out')
+
 # Buttons for panning on screen
 
 #60 and 50 for big screen
@@ -492,7 +565,6 @@ if screen_size == 0:
 else:
     arrow_width = 60
     arrow_height = 50
-
 
 # Setting up frame for up/down arrows
 
