@@ -10,14 +10,17 @@ Completed tasks:
  - Added in module that imposed a theme to improve UI layout (Sita) 
  - Edited widgits to fit new layouts: arrow buttons, removed main menu, and stopped text extending off screen (Matthew). 
  
- Tasks currently in progress
+ Tasks currently in progress:
  - Add in mechanism for user to connect to Wifi through touchscreen (Matthew)
        - Done for WEP (need to test)
        - Need to do for WPA and WPA2 (possibly through editing config file, or finding module)
+ - Touchscreen calibration (Abigail)
 
 Tasks still to complete/would be nice to do: (please tick these off as appropriate)
- - Add in a slider to dim screen (or have a function to make touchscreen 'sleep' to save battery a few minutes after streaming begins (I think Abigail said she'd look into this)
  - Type in a guide for the user (Matthew/Sam)
+ 
+ Scrapped tasks:
+  - Add in a slider to dim screen (or have a function to make touchscreen 'sleep' to save battery a few minutes after streaming begins (Abigail) - touchscreen chosen for project doesn't have ability to change brightness
 
 IMPORTANT NOTES:
 - YOU WILL NEED TO DOWNLOAD PHOTOS AND CHANGE THEIR DIRECTORIES FOR CODE TO RUN
