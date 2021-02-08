@@ -2,7 +2,8 @@ from tkinter import *
 from tkinter import messagebox, _setit, ttk
 from PIL import Image, ImageTk
 from ttkthemes import ThemedStyle
-from Keyboard import create_keyboard, keyboard_on
+from Keyboard import create_keyboard, keyboard_on, function_maker
+import VideoSetting as vs
 import pickle
 import os
 
@@ -41,6 +42,13 @@ video_connection = 0
 
 # SITA (i have removed the connection between the wifi button and anything so it calls nothing (and hence won't cause it
 # to crash when you run it)
+
+class name_scale(ttk.Scale):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.name = 'Unnamed'
+        self.max = 0
+        self.min = 0
 
 
 screen_size = 1 #to switch between 320x240, and 480x320 (0 is 320x240)
@@ -459,7 +467,6 @@ stream_button = ttk.Button(settings2, text='Stream', command=stream_return2)
 stream_button.grid(columnspan=2, column=0, row=2)
 
 
-
 # Stream display--------------------------------------------------------------------------------------------------------
 
 stream.grid_rowconfigure((0,3), weight=2)
@@ -548,14 +555,38 @@ current_mode = 'pan'
 options = ('Brightness','Saturation','Sharpness','Contrast','rotation','zoom','pan','modes','effects')
 slider_options = ('Brightness','Saturation','Sharpness','Contrast')
 
-slider_list = list(range(12))
+slider_list = list(range(12)) #list containing all buttons on pages with sliders
+sliders_list = [] #list containing all the sliders
 
 slider_counter = 0
+
+
 for sliders in slider_options:
     slider_list[slider_counter] = ttk.Button(stream, text='Increase')
     slider_list[slider_counter+1] = ttk.Button(stream, text='Decrease')
-    slider_list[slider_counter+2] = ttk.Scale(stream)
+    slider_list[slider_counter+2] = name_scale(stream)
+    slider_list[slider_counter+2].name = sliders
+    sliders_list.append(slider_list[slider_counter+2])
+
     slider_counter += 3
+
+slider_counter = 0
+
+slider_function = list(range(8))
+
+for sliders in sliders_list:
+    slider_function[slider_counter] = function_maker(vs.slider_increase, sliders_list[slider_counter], sliders_list)
+    slider_function[slider_counter+1] = function_maker(vs.slider_decrease, sliders_list[slider_counter], sliders_list)
+    slider_counter += 2
+
+slider_counter = 0
+function_counter = 0
+
+for sliders in slider_options:
+    slider_list[slider_counter].configure(command=slider_function[function_counter])
+    slider_list[slider_counter+1].configure(command=slider_function[function_counter+1])
+    slider_counter += 3
+    function_counter += 2
 
 mode_text = StringVar()
 effect_text = StringVar()
@@ -567,14 +598,15 @@ effect_options = ('none', 'negative', 'solarize', 'sketch', 'denoise', 'emboss',
 'watercolour', 'film', 'blur', 'saturation', 'colorswap', 'washedout', 'posterise', 'colorpoint', 'colorbalance', 'cartoon'
 'deinterlace1', 'deinterlace2')
 
-mode_menu = ttk.OptionMenu(stream, mode_text, *mode_options)
-effect_menu = ttk.OptionMenu(stream, effect_text, *effect_options)
 
-anti_clock = ttk.Button(stream, text='Anticlockwise')
-clock = ttk.Button(stream, text='Clockwise')
+mode_menu = ttk.OptionMenu(stream, mode_text, *mode_options,) # use function maker on these ones
+effect_menu = ttk.OptionMenu(stream, effect_text, *effect_options) #user function maker on these
 
-zoom_in = ttk.Button(stream, text='Zoom In')
-zoom_out = ttk.Button(stream, text='Zoom Out')
+anti_clock = ttk.Button(stream, text='Anticlockwise', command=vs.rotate_anticlock)
+clock = ttk.Button(stream, text='Clockwise', command=vs.rotate_clock)
+
+zoom_in = ttk.Button(stream, text='Zoom In', command=vs.zoom_in)
+zoom_out = ttk.Button(stream, text='Zoom Out', command=vs.zoom_out)
 
 #function to change the thing being customized
 

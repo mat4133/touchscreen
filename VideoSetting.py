@@ -20,14 +20,14 @@ Image_num = 1
 Count_capture = 0
 Sav_num = 0
 
-def display(Brightness_slider,Saturation_slider,Contrast_slider):
+def display(Brightness_slider, Saturation_slider, Contrast_slider, Sharpness_slider):
     video.preview_fullscreen = False
     video.preview_window = (0,0,100,100) #Where the window should go
     video.video_stabilization = True
     video.brightness = Brightness_slider.get()
     video.contrast = Contrast_slider.get()
     video.saturation = Saturation_slider.get()
-
+    video.sharpness = Sharpness_slider.get()
 
 #brightness 0 - 99
 #saturation -99 --> 99
@@ -35,28 +35,51 @@ def display(Brightness_slider,Saturation_slider,Contrast_slider):
 #contrast -99 --> 99
 
 #to increase the slider
-def slider_increase(slider, max):
-    if video.brightness < (max-5):
-        video.brightness += 5
+def slider_increase(slider, sliders_list):
+    if slider.name == "Brightness":
+        parameter = video.brightness
+    elif slider.name == "Contrast":
+        parameter = video.contrast
+    elif slider.name == "Saturation":
+        parameter = video.saturation
+    elif slider.name == "Sharpness":
+        parameter = video.sharpness
     else:
-        video.brightness = max
-    slider.set()
-    display()
+        print('parameter error')
+    if parameter > (slider.max-5):
+        parameter += 5
+    else:
+        parameter = max
+    slider.set(parameter)
+    display(*sliders_list)
 
 #to decrease the slider
-def slider_decrease(slider, min):
-    if (video.brightness+5) > min:
-        video.brightness -= 5
+def slider_decrease(slider,sliders_list):
+    if slider == "Brightness":
+        parameter = video.brightness
+    elif slider == "Contrast":
+        parameter = video.contrast
+    elif slider == "Saturation":
+        parameter = video.saturation
+    elif slider == "Sharpness":
+        parameter = video.sharpness
     else:
-        video.brightness = min
+        print('parameter error')
+    if parameter < (slider.min+5):
+        parameter -= 5
+    else:
+        parameter = min
     slider.set()
-    display()
+    display(*sliders_list)
 
 #to rotate
-def rotate(Rotation_Label):
+def rotate_clock(sliders_list):
     video.rotation += 90
-    display()
+    display(*sliders_list)
 
+def rotate_anticlock(sliders_list):
+    video.rotation -= 90
+    display(*sliders_list)
 
 #zooming in/out
 def zoom_in():
@@ -69,16 +92,15 @@ def zoom_out():
 
 #Modes are as follows:
 
-def awb(mode):
+def awb(mode, sliders_list):
     video.AWB_MODES[mode]
-    display()
+    display(*sliders_list)
 
 #Effects are as follows
 
-def effects(effect):
+def effects(effect, sliders_list):
     effect.image_effect = effect
-    display()
-
+    display(*sliders_list)
 
 #function to detect motion
 
