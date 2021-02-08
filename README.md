@@ -15,9 +15,11 @@ Completed tasks:
        - Done for WEP (need to test)
        - Need to do for WPA and WPA2 (possibly through editing config file, or finding module)
  - Touchscreen calibration (Abigail)
+ - Adding in option for user to change brightness/contrast/saturation/rotation/pan/zoom in-out and add effects to displayed image (need to check with patrick about this working on stream, rn it works on preview) (Matthew)
 
 Tasks still to complete/would be nice to do: (please tick these off as appropriate)
  - Type in a guide for the user (Matthew/Sam)
+ - Possibly add in some kind of motion sensor + motion tracker (Matthew, but not sure if I can do this)
  
  Scrapped tasks:
   - Add in a slider to dim screen (or have a function to make touchscreen 'sleep' to save battery a few minutes after streaming begins (Abigail) - touchscreen chosen for project doesn't have ability to change brightness
