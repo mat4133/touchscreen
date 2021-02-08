@@ -362,6 +362,7 @@ def reset_page(current_frame):
     delay.grid(column=1, row=6, columnspan=2)
     main_menur.grid(column=0, row=7, columnspan=3, rowspan=2)
 
+
 # user to input stream key
 stream_inputlabel = ttk.Label(settings, text='Enter key:')
 stream_inputlabel.grid(column=0, row=2)
@@ -519,9 +520,6 @@ go_btn.grid(column=2, row=3)
 
 def zoom():
 
-    zoom_button.grid_forget()
-    pan_button.grid(column=2,row=0)
-
     up_arr.grid_forget()
     down_arr.grid_forget()
     left_arr.grid_forget()
@@ -532,30 +530,108 @@ def zoom():
 
 def pan():
 
-    pan_button.grid_forget()
     zoom_in.grid_forget()
     zoom_out.grid_forget()
 
-    zoom_button.grid(column=2,row=0)
     up_arr.grid(column=2, row=1)
     down_arr.grid(column=2,row=2)
     left_arr.grid(row=3, column=0)
     right_arr.grid(row=3, column=1)
 
-# Button to change from panning to zooming in/out
 
-zoom_button = ttk.Button(stream,text='Zoom', command=zoom)
-zoom_button.grid(column=2,row=0)
+# Button to select between video options
 
-pan_button = ttk.Button(stream,text='Pan', command=pan)
+current_mode = 'pan'
 
-#Buttons for zooming/in out
+#creating buttons and scroll bars for different video customizations
 
-zoom_in = ttk.Button(stream, text='Zoom in')
+options = ('Brightness','Saturation','Sharpness','Contrast','rotation','zoom','pan','modes','effects')
+slider_options = ('Brightness','Saturation','Sharpness','Contrast')
 
-zoom_out = ttk.Button(stream, text='Zoom out')
+slider_list = list(range(12))
 
-# Buttons for panning on screen
+slider_counter = 0
+for sliders in slider_options:
+    slider_list[slider_counter] = ttk.Button(stream, text='Increase')
+    slider_list[slider_counter+1] = ttk.Button(stream, text='Decrease')
+    slider_list[slider_counter+2] = ttk.Scale(stream)
+    slider_counter += 3
+
+mode_text = StringVar()
+effect_text = StringVar()
+effect_text.set('Effect')
+mode_text.set('Mode')
+
+mode_options = ('auto', 'sunlight', 'cloudy', 'shade', 'tungsten', 'fluorescent', 'incandescent', 'flash', 'horizon', 'off')
+effect_options = ('none', 'negative', 'solarize', 'sketch', 'denoise', 'emboss', 'oilpaint', 'hatch', 'qpen', 'pastel',
+'watercolour', 'film', 'blur', 'saturation', 'colorswap', 'washedout', 'posterise', 'colorpoint', 'colorbalance', 'cartoon'
+'deinterlace1', 'deinterlace2')
+
+mode_menu = ttk.OptionMenu(stream, mode_text, *mode_options)
+effect_menu = ttk.OptionMenu(stream, effect_text, *effect_options)
+
+anti_clock = ttk.Button(stream, text='Anticlockwise')
+clock = ttk.Button(stream, text='Clockwise')
+
+zoom_in = ttk.Button(stream, text='Zoom In')
+zoom_out = ttk.Button(stream, text='Zoom Out')
+
+#function to change the thing being customized
+
+def change_mode(*args):
+    global current_mode
+    print(current_mode)
+    if current_mode == "Brightness" or current_mode == "Saturation" or current_mode == "Sharpness" or current_mode == "Contrast":
+        value = options.index(current_mode)
+        slider_list[3*value].grid_forget()
+        slider_list[3 * value+1].grid_forget()
+        slider_list[3 * value+2].grid_forget()
+    elif current_mode == "pan":
+        up_arr.grid_forget()
+        down_arr.grid_forget()
+        left_arr.grid_forget()
+        right_arr.grid_forget()
+    elif current_mode == 'effects':
+        effect_menu.grid_forget()
+    elif current_mode == 'modes':
+        mode_menu.grid_forget()
+    elif current_mode == 'zoom':
+        zoom_in.grid_forget()
+        zoom_out.grid_forget()
+    elif current_mode == 'rotation':
+        anti_clock.grid_forget()
+        clock.grid_forget()
+    value = options.index(args[0])
+    if args[0] == 'Brightness' or args[0] == 'Saturation' or args[0] == 'Sharpness' or args[0] == 'Contrast':
+        slider_list[3*value].grid(column=2,row=1)
+        slider_list[3*value+1].grid(column=2,row=2)
+        slider_list[3*value+2].grid(column=0,row=3, columnspan=2)
+    elif args[0] == 'effects':
+        effect_menu.grid(column=0,row=3,columnspan=2)
+    elif args[0] == 'modes':
+        mode_menu.grid(column=0, row=3, columnspan=2)
+    elif args[0] == 'zoom':
+        zoom_in.grid(column=2, row=1, rowspan=2)
+        zoom_out.grid(column=0, row=3, columnspan=2)
+    elif args[0] == 'rotation':
+        anti_clock.grid(column=2, row=1, rowspan=2)
+        clock.grid(column=0,row=3,columnspan=2)
+    elif args[0] == 'pan':
+        up_arr.grid(column=2, row=1)
+        down_arr.grid(column=2, row=2)
+        left_arr.grid(row=3, column=0)
+        right_arr.grid(row=3, column=1)
+    current_mode = args[0]
+
+
+#button for dropdown list where user can change video type
+
+customise = StringVar()
+customise.set('customise')
+
+video_button = ttk.OptionMenu(stream, customise, *options, command=change_mode)
+video_button.grid(column=2,row=0)
+
 
 #60 and 50 for big screen
 
@@ -647,7 +723,7 @@ explain what the delay between audio/video is and why it is necessary,
 along with other necessary things...""")
 rick_roll.pack(fill=BOTH)
 
-stream_btn = ttk.Button(tutorial, text="Stream",command=back_tutorial)
+stream_btn = ttk.Button(tutorial, text="Stream", command=back_tutorial)
 stream_btn.pack()
 
 # Button to deal with return to main menu from tutorial screen
