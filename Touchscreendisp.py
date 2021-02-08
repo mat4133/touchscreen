@@ -355,7 +355,7 @@ def keyboard_space_settings(*args):
     BckLbl.grid_forget()
     delay.grid_forget()
     main_menur.grid_forget()
-
+    more_settings.grid_forget()
     keyboard_on(keyboard_frame1.children['!frame'])
 
 def reset_page(current_frame):
@@ -369,6 +369,7 @@ def reset_page(current_frame):
     BckLbl.grid(column=1, row=6, columnspan=2)
     delay.grid(column=1, row=6, columnspan=2)
     main_menur.grid(column=0, row=7, columnspan=3, rowspan=2)
+    more_settings.grid(column=2, row=7, rowspan=2)
 
 
 # user to input stream key
