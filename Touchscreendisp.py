@@ -448,23 +448,30 @@ more_settings.grid(column=2, row=7, rowspan=2)
 
 # More settings ---------------------------------------------------------------------------------------------
 
-settings2.rowconfigure((0,1,2), weight=1)
+settings2.rowconfigure((0,1,2,3), weight=1)
 settings2.columnconfigure((0,1), weight=1)
+
+# Touchscreen calibration
+def touchscreen_calibration():
+    os.system("usr/bin/xinput_calibrator | tail -6 > /etc/X11/xorg.conf.d/99-calibration.conf")
+    
+screen_calib = ttk.Button(settings2, text="Touchscreen Calibration", command=touchscreen_calibration)
+screen_calib.grid(column=0, row=0, columnspan=2)
 
 frame_rate = DoubleVar()
 frame_rate_label = ttk.Label(settings2, text='Frame Rate:')
 frame_rate_scroller = ttk.Spinbox(settings2, from_= 0, to=100, textvariable=frame_rate)
-frame_rate_scroller.grid(column=1, row=0)
-frame_rate_label.grid(column=0, row=0)
+frame_rate_scroller.grid(column=1, row=1)
+frame_rate_label.grid(column=0, row=1)
 
 bit_rate = DoubleVar()
 bit_rate_label = ttk.Label(settings2, text='Bit Rate: ')
 bit_rate_scroller = ttk.Spinbox(settings2, from_= 0, to=100, textvariable=bit_rate)
-bit_rate_label.grid(column=0, row=1)
-bit_rate_scroller.grid(column=1, row=1)
+bit_rate_label.grid(column=0, row=2)
+bit_rate_scroller.grid(column=1, row=2)
 
 stream_button = ttk.Button(settings2, text='Stream', command=stream_return2)
-stream_button.grid(columnspan=2, column=0, row=2)
+stream_button.grid(columnspan=2, column=0, row=3)
 
 
 # Stream display--------------------------------------------------------------------------------------------------------
