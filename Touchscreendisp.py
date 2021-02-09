@@ -59,7 +59,7 @@ app.title('Streaming on a prayer')
 if screen_size == 0:
     app.geometry('320x240')  # swap to fullscreen when using touchscreen
 else:
-    app.geometry('480x320')
+    app.attributes('-fullscreen', True)
 
 #initializing style
 style = ThemedStyle(app)
@@ -355,7 +355,7 @@ def keyboard_space_settings(*args):
     BckLbl.grid_forget()
     delay.grid_forget()
     main_menur.grid_forget()
-    more_settings.grid_forget()
+
     keyboard_on(keyboard_frame1.children['!frame'])
 
 def reset_page(current_frame):
@@ -369,7 +369,6 @@ def reset_page(current_frame):
     BckLbl.grid(column=1, row=6, columnspan=2)
     delay.grid(column=1, row=6, columnspan=2)
     main_menur.grid(column=0, row=7, columnspan=3, rowspan=2)
-    more_settings.grid(column=2, row=7, rowspan=2)
 
 
 # user to input stream key
@@ -558,27 +557,36 @@ slider_options = ('Brightness','Saturation','Sharpness','Contrast')
 
 slider_list = list(range(12)) #list containing all buttons on pages with sliders
 sliders_list = [] #list containing all the sliders
+video_storage = [vs.video.brightness, vs.video.saturation, vs.video.sharpness, vs.video.contrast]
 
 slider_counter = 0
-
+slidercounter2 = 0
 
 for sliders in slider_options:
     slider_list[slider_counter] = ttk.Button(stream, text='Increase')
     slider_list[slider_counter+1] = ttk.Button(stream, text='Decrease')
-    slider_list[slider_counter+2] = name_scale(stream)
+    slider_list[slider_counter+2] = name_scale(stream, from_=0, to=100)
     slider_list[slider_counter+2].name = sliders
+    slider_list[slider_counter+2].max = 100
+    slider_list[slider_counter+2].min = 0
+    slider_list[slider_counter+2].set(video_storage[slidercounter2])
     sliders_list.append(slider_list[slider_counter+2])
-
+    
+    slidercounter2 += 1
     slider_counter += 3
 
+vs.display(*sliders_list)
+
 slider_counter = 0
+slidercounter2 = 0
 
 slider_function = list(range(8))
 
 for sliders in sliders_list:
-    slider_function[slider_counter] = function_maker(vs.slider_increase, sliders_list[slider_counter], sliders_list)
-    slider_function[slider_counter+1] = function_maker(vs.slider_decrease, sliders_list[slider_counter], sliders_list)
+    slider_function[slider_counter] = function_maker(vs.slider_increase, sliders_list[slidercounter2], sliders_list)
+    slider_function[slider_counter+1] = function_maker(vs.slider_decrease, sliders_list[slidercounter2], sliders_list)
     slider_counter += 2
+    slidercounter2 += 1
 
 slider_counter = 0
 function_counter = 0
@@ -600,11 +608,11 @@ effect_options = ('none', 'negative', 'solarize', 'sketch', 'denoise', 'emboss',
 'deinterlace1', 'deinterlace2')
 
 
-mode_menu = ttk.OptionMenu(stream, mode_text, *mode_options,) # use function maker on these ones
-effect_menu = ttk.OptionMenu(stream, effect_text, *effect_options) #user function maker on these
+mode_menu = ttk.OptionMenu(stream, mode_text, *mode_options, command=function_maker(vs.awb, sliders_list)) # use function maker on these ones
+effect_menu = ttk.OptionMenu(stream, effect_text, *effect_options, command=function_maker(vs.effects, sliders_list)) #user function maker on these
 
-anti_clock = ttk.Button(stream, text='Anticlockwise', command=vs.rotate_anticlock)
-clock = ttk.Button(stream, text='Clockwise', command=vs.rotate_clock)
+anti_clock = ttk.Button(stream, text='Anticlockwise', command=function_maker(vs.rotate_anticlock, sliders_list))
+clock = ttk.Button(stream, text='Clockwise', command=function_maker(vs.rotate_clock, sliders_list))
 
 zoom_in = ttk.Button(stream, text='Zoom In', command=vs.zoom_in)
 zoom_out = ttk.Button(stream, text='Zoom Out', command=vs.zoom_out)
@@ -613,7 +621,7 @@ zoom_out = ttk.Button(stream, text='Zoom Out', command=vs.zoom_out)
 
 def change_mode(*args):
     global current_mode
-    print(current_mode)
+    #print(current_mode)
     if current_mode == "Brightness" or current_mode == "Saturation" or current_mode == "Sharpness" or current_mode == "Contrast":
         value = options.index(current_mode)
         slider_list[3*value].grid_forget()
@@ -677,7 +685,7 @@ else:
 
 # Setting up frame for up/down arrows
 
-uparrow = Image.open("\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\UpArrow.png")  # needs to be whatever your directory is
+uparrow = Image.open("/home/pi/touchscreen/Touchscreen_photos/UpArrow.png")  # needs to be whatever your directory is
 
 # adjusting up arrow size
 up_per = (arrow_width / float(uparrow.size[0]))
@@ -689,7 +697,7 @@ up_arr = ttk.Button(stream, image=uparrowrender)
 up_arr.image = uparrowrender
 up_arr.grid(column=2, row=1)
 
-downarrow = Image.open("\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\DownArrow.png")  # needs to be whatever your directory is
+downarrow = Image.open("/home/pi/touchscreen/Touchscreen_photos/DownArrow.png")  # needs to be whatever your directory is
 
 # adjusting down arrow size
 down_per = (arrow_width / float(downarrow.size[0]))
@@ -705,7 +713,7 @@ down_arr.grid(column=2, row=2)
 
 # Setting up frame for left/right arrows
 
-leftarrow = Image.open("\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\LeftArrow.png")  # needs to be whatever your directory is
+leftarrow = Image.open("/home/pi/touchscreen/Touchscreen_photos/LeftArrow.png")  # needs to be whatever your directory is
 
 # adjusting left arrow size
 left_per = (arrow_height / float(leftarrow.size[0]))
@@ -717,7 +725,7 @@ left_arr = ttk.Button(stream, image=leftarrowrender)
 left_arr.image = leftarrowrender
 left_arr.grid(row=3, column=0)
 
-rightarrow = Image.open("\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\RightArrow.png")  # needs to be whatever your directory is
+rightarrow = Image.open("/home/pi/touchscreen/Touchscreen_photos/RightArrow.png")  # needs to be whatever your directory is
 
 # adjusting right arrow size
 
@@ -738,7 +746,7 @@ else:
     stock_height = 400
 
 stock = Frame(stream, bg=style.lookup('TFrame', 'background'))
-Sample_photo = Image.open("\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\Crowley.jpg")  # needs to be whatever your directory is
+Sample_photo = Image.open("/home/pi/touchscreen/Touchscreen_photos/Crowley.jpg")  # needs to be whatever your directory is
 crowley_per = stock_height / float(Sample_photo.size[0])
 width = int((float(Sample_photo.size[1]) * float(crowley_per)))
 Sample_photo = Sample_photo.resize((stock_height, width))

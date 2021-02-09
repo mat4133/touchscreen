@@ -1,5 +1,6 @@
 import time
 import picamera
+#from picamera import PiCamera
 import RPi.GPIO as GPIO
 import numpy as np
 import io
@@ -8,7 +9,7 @@ GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(17, GPIO.IN, GPIO.PUD_UP)
 
-video = picamera.PICamera()
+video = picamera.PiCamera()
 
 #default settings
 zoom = 1
@@ -22,12 +23,16 @@ Sav_num = 0
 
 def display(Brightness_slider, Saturation_slider, Contrast_slider, Sharpness_slider):
     video.preview_fullscreen = False
-    video.preview_window = (0,0,100,100) #Where the window should go
+    video.preview_window = (0,0,320, 480) #Where the window should go
     video.video_stabilization = True
-    video.brightness = Brightness_slider.get()
-    video.contrast = Contrast_slider.get()
-    video.saturation = Saturation_slider.get()
-    video.sharpness = Sharpness_slider.get()
+    #print("brightenss" + str(Brightness_slider.get()))
+    video.brightness = int(Brightness_slider.get())
+    video.start_preview()
+    video.contrast = int(Contrast_slider.get())
+    video.saturation = int(Saturation_slider.get())
+    video.sharpness = int(Sharpness_slider.get())
+    
+
 
 #brightness 0 - 99
 #saturation -99 --> 99
@@ -49,26 +54,26 @@ def slider_increase(slider, sliders_list):
     if parameter > (slider.max-5):
         parameter += 5
     else:
-        parameter = max
+        parameter = slider.max
     slider.set(parameter)
     display(*sliders_list)
 
 #to decrease the slider
 def slider_decrease(slider,sliders_list):
-    if slider == "Brightness":
+    if slider.name == "Brightness":
         parameter = video.brightness
-    elif slider == "Contrast":
+    elif slider.name == "Contrast":
         parameter = video.contrast
-    elif slider == "Saturation":
+    elif slider.name == "Saturation":
         parameter = video.saturation
-    elif slider == "Sharpness":
+    elif slider.name == "Sharpness":
         parameter = video.sharpness
     else:
         print('parameter error')
     if parameter < (slider.min+5):
         parameter -= 5
     else:
-        parameter = min
+        parameter = slider.min
     slider.set()
     display(*sliders_list)
 
@@ -92,14 +97,16 @@ def zoom_out():
 
 #Modes are as follows:
 
-def awb(mode, sliders_list):
+def awb(sliders_list, mode):
+    print(mode)
     video.AWB_MODES[mode]
     display(*sliders_list)
 
 #Effects are as follows
 
-def effects(effect, sliders_list):
-    effect.image_effect = effect
+def effects(sliders_list, effect):
+    print(effect)
+    video.image_effect = effect
     display(*sliders_list)
 
 #function to detect motion
