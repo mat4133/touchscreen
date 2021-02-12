@@ -73,43 +73,52 @@ app.configure(bg=style.lookup('TFrame', 'background'))
 # app.attributes('-fullscreen',True)
 
 # Setting up windows for application (main menu, settings, stream)
-settings = Frame(app)
-settings.configure(bg=style.lookup('TFrame', 'background'))
-stream = Frame(app)
-stream.configure(bg=style.lookup('TFrame', 'background'))
-tutorial = Frame(app)
-tutorial.configure(bg=style.lookup('TFrame', 'background'))
-wifi_login = Frame(app)
-wifi_login.configure(bg=style.lookup('TFrame', 'background'))
-settings2 = Frame(app)
-settings2.configure(bg=style.lookup('TFrame','background'))
+style.configure('TNotebook.Tab', width=app.winfo_screenwidth())
+style.configure("Tab", focuscolor=style.configure(".")["background"])
+style.configure('TNotebook.Tab', anchor=CENTER, activebackground='#00ff00')
+note = ttk.Notebook(app)
+note.pack()
+
+stream = ttk.Frame(note)
+settings = ttk.Frame(note)
+wifi_login = ttk.Frame(note)
+tutorial = ttk.Frame(note)
+
+
+note.add(stream, text="STREAM")
+note.add(settings, text="SETTINGS")
+note.add(wifi_login, text="WIFI")
+note.add(tutorial, text="TUTORIAL")
+
+settings2 = ttk.Frame(app)
+
 
 # setting up main menu
-stream.pack(padx=0, pady=0, expand=True, fill=BOTH)
+#stream.pack(padx=0, pady=0, expand=True, fill=BOTH)
 
 # Changing from stream to settings screen
-def change_settings():
-    stream.pack_forget()
-    settings.pack(padx=0, pady=0, expand=True, fill=BOTH)
+#def change_settings():
+#    stream.pack_forget()
+#    settings.pack(padx=0, pady=0, expand=True, fill=BOTH)
 
-def back_tutorial():
-    tutorial.pack_forget()
-    stream.pack(padx=0, pady=0, expand=True, fill=BOTH)
+#def back_tutorial():
+#    tutorial.pack_forget()
+#    stream.pack(padx=0, pady=0, expand=True, fill=BOTH)
 
 # stream to tutorial screen
-def change_tutorial():
-    stream.pack_forget()
-    tutorial.pack(padx=0, pady=0, expand=TRUE, fill=BOTH)
+#def change_tutorial():
+#    stream.pack_forget()
+#    tutorial.pack(padx=0, pady=0, expand=TRUE, fill=BOTH)
     
 # settings to wifi login    
-def change_wifi():
-    settings.pack_forget()
-    wifi_login.pack(padx=0, pady=0, expand=TRUE, fill=BOTH)
+#def change_wifi():
+#    settings.pack_forget()
+#    wifi_login.pack(padx=0, pady=0, expand=TRUE, fill=BOTH)
     
 # wifi login to settings
-def back_settings():
-    wifi_login.pack_forget()
-    settings.pack(padx=0, pady=0, expand=TRUE, fill=BOTH)
+#def back_settings():
+#    wifi_login.pack_forget()
+#    settings.pack(padx=0, pady=0, expand=TRUE, fill=BOTH)
 
 # Main menu display (now removed)--------------------------------------------------------------------------------------
 
@@ -122,17 +131,10 @@ main_menu.grid_rowconfigure(0, weight=3)
 main_menu.grid_columnconfigure((0, 1, 2), weight=1)
 """
 
-# Adding buttons for going to the three windows
-set_btn = ttk.Button(stream, text="SETTINGS", command=change_settings)
-set_btn.grid(column=0, row=0, sticky='nesw')
-
 """
 stream_btn = ttk.Button(main_menu, text="STREAM", command=change_stream)
 stream_btn.grid(column=1, row=2)
 """
-
-tutorial_btn = ttk.Button(stream, text="TUTORIAL", command=change_tutorial)
-tutorial_btn.grid(column=1, row=0, sticky='nesw')
 
 """
 Menu_lbl = ttk.Label(stream, text="MAIN MENU")
@@ -144,14 +146,7 @@ Menu_lbl.grid(column=1, row=0)
 # Configuring grid layout for settings window
 settings.grid_columnconfigure(0, weight=2)
 settings.grid_columnconfigure((1,2), weight=1)
-settings.grid_rowconfigure((0, 1, 2, 3, 4, 5, 6), weight=1)
-settings.grid_rowconfigure(7, weight=2)
-
-# Code for Wifi connection
-wifi_label = ttk.Label(settings, text='WiFi')
-wifi_label.grid(column=0, row=0)
-wifi_connected = ttk.Label(settings, text='Unconnected')
-wifi_connected.grid(column=1, row=0)
+settings.grid_rowconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8), weight=1)
 
 # Wifi login and code ----------------------------------------------------------------------
 
@@ -181,23 +176,36 @@ def wifi_connect():
 '''
 
 def username_space_wifi(*args):
-    back_btn.grid_forget()
     connect_btn.grid_forget()
+    wifi_label.grid_forget()
+    saved_lbl.grid_forget()
+    saved_menu.grid_forget()
+    wifi_connected.grid_forget()
     password_lbl.grid_forget()
     password_entr.grid_forget()
+    username_entr.grid(column=1, row=1)
+    username_lbl.grid(column=0, row=1)
     keyboard_on(keyboard_frame2.children['!frame'])
 
 def username_keyboard_off(current_frame):
     current_frame.grid_forget()
     keyboard_frame2.grid_forget()
-    back_btn.grid(column=0, row=3)
-    connect_btn.grid(column=1, row=3)
-    password_lbl.grid(column=0, row=2)
-    password_entr.grid(column=1, row=2)
+    saved_lbl.grid(column=0,row=1)
+    saved_menu.grid(column=1,row=1)
+    wifi_label.grid(column=0, row=0)
+    wifi_connected.grid(column=1, row=0)
+    connect_btn.grid(column=1, row=4)
+    username_entr.grid(column=1, row=2)
+    username_lbl.grid(column=0, row=2)
+    password_lbl.grid(column=0, row=3)
+    password_entr.grid(column=1, row=3)
 
 def password_space_wifi(*args):
-    back_btn.grid_forget()
     connect_btn.grid_forget()
+    wifi_label.grid_forget()
+    saved_lbl.grid_forget()
+    saved_menu.grid_forget()
+    wifi_connected.grid_forget()
     username_entr.grid_forget()
     username_lbl.grid_forget()
     password_entr.grid(column=1, row=1)
@@ -207,47 +215,53 @@ def password_space_wifi(*args):
 def password_keyboard_off(current_frame):
     current_frame.grid_forget()
     keyboard_frame3.grid_forget()
-    password_entr.grid(column=1, row=2)
-    password_lbl.grid(column=0,row=2)
-    username_entr.grid(column=1, row=1)
-    username_lbl.grid(column=0, row=1)
-    back_btn.grid(column=0, row=3)
-    connect_btn.grid(column=1, row=3)
+    wifi_label.grid(column=0, row=0)
+    saved_lbl.grid(column=0,row=1)
+    saved_menu.grid(column=1,row=1)
+    wifi_connected.grid(column=1, row=0)
+    password_entr.grid(column=1, row=3)
+    password_lbl.grid(column=0,row=3)
+    username_entr.grid(column=1, row=2)
+    username_lbl.grid(column=0, row=2)
+    connect_btn.grid(column=1, row=4)
 
-wifi_login.grid_rowconfigure((0,1,2,3), weight = 1)
+wifi_login.grid_rowconfigure((0,1,2,3,4), weight = 1)
 wifi_login.grid_columnconfigure((0,1), weight = 1)
 
+# Code for Wifi connection
+wifi_label = ttk.Label(wifi_login, text='WiFi')
+wifi_label.grid(column=0, row=0)
+wifi_connected = ttk.Label(wifi_login, text='Unconnected')
+wifi_connected.grid(column=1, row=0)
+
 saved_lbl = ttk.Label(wifi_login, text='SAVED NETWORKS', )
-saved_lbl.grid(column=0,row=0)
+saved_lbl.grid(column=0,row=1)
 
 saved_networks = ['Placeholder']
 current_network = StringVar()
 current_network.set('Placeholder')
 
 saved_menu = ttk.OptionMenu(wifi_login, current_network, *saved_networks)
-saved_menu.grid(column=1,row=0)
+saved_menu.grid(column=1,row=1)
 
 username_lbl = ttk.Label(wifi_login, text='USERNAME:')
-username_lbl.grid(column=0, row=1)
+username_lbl.grid(column=0, row=2)
 
 username_text = StringVar()
 username_entr = ttk.Entry(wifi_login, textvariable = username_text )
-username_entr.grid(column=1, row=1)
+username_entr.grid(column=1, row=2)
 username_entr.bind("<Button>", username_space_wifi)
 
 password_lbl = ttk.Label(wifi_login, text='PASSWORD:')
-password_lbl.grid(column=0, row=2)
+password_lbl.grid(column=0, row=3)
 
 password_text = StringVar()
 password_entr = ttk.Entry(wifi_login, textvariable = password_text)
-password_entr.grid(column=1, row=2)
+password_entr.grid(column=1, row=3)
 password_entr.bind("<Button>", password_space_wifi)
 
-back_btn = ttk.Button(wifi_login, text='BACK', command=back_settings)
-back_btn.grid(column=0, row=3)
-
 connect_btn = ttk.Button(wifi_login, text='CONNECT / SAVE')
-connect_btn.grid(column=1, row=3)
+connect_btn.grid(columnspan=2, row=4)
 
 keyboard_frame2 = Frame(wifi_login)
 keyboard_frame2.configure(bg=style.lookup('TFrame', 'background'))
@@ -267,8 +281,6 @@ keyboard_frame3 = create_keyboard(keyboard_frame3, password_entr, password_text,
 
 #Settings frame--------------------------------------------------------------------------------------
 
-wifi_button = ttk.Button(settings, text='Connect', command=change_wifi)
-wifi_button.grid(column=2, row=0)
 
 # code for saving and importing streams
 
@@ -354,8 +366,10 @@ def keyboard_space_settings(*args):
     delay_lbl.grid_forget()
     BckLbl.grid_forget()
     delay.grid_forget()
-    main_menur.grid_forget()
-
+    frame_rate_label.grid_forget()
+    bit_rate_label.grid_forget()
+    frame_rate_scroller.grid_forget()
+    bit_rate_scroller.grid_forget()
     keyboard_on(keyboard_frame1.children['!frame'])
 
 def reset_page(current_frame):
@@ -368,7 +382,10 @@ def reset_page(current_frame):
     delay_lbl.grid(column=0, row=6)
     BckLbl.grid(column=1, row=6, columnspan=2)
     delay.grid(column=1, row=6, columnspan=2)
-    main_menur.grid(column=0, row=7, columnspan=3, rowspan=2)
+    frame_rate_label.grid(column=0, row=7)
+    bit_rate_label.grid(column=0, row=8)
+    frame_rate_scroller.grid(column=1, row=7, columnspan=2)
+    bit_rate_scroller.grid(column=1, row=8, columnspan=2)
 
 
 # user to input stream key
@@ -427,29 +444,41 @@ delay.grid(column=1, row=6, columnspan=2)
 
 # return to main_menu
 
-def stream_return():
-    settings.pack_forget()
-    stream.pack(padx=1, pady=1, expand=True, fill=BOTH)
+#def stream_return():
+#    settings.pack_forget()
+#    stream.pack(padx=1, pady=1, expand=True, fill=BOTH)
 
-def stream_return2():
-    settings2.pack_forget()
-    stream.pack(padx=1, pady=1, expand=True, fill=BOTH)
+#def stream_return2():
+#    settings2.pack_forget()
+#    stream.pack(padx=1, pady=1, expand=True, fill=BOTH)
 
-def more_settings():
-    settings.pack_forget()
-    settings2.pack(padx=1,pady=1,expand=True, fill=BOTH)
+#def more_settings():
+#    settings.pack_forget()
+#    settings2.pack(padx=1,pady=1,expand=True, fill=BOTH)
+
+frame_rate = DoubleVar()
+frame_rate_label = ttk.Label(settings, text='Frame Rate:')
+frame_rate_scroller = ttk.Spinbox(settings, from_= 0, to=100, textvariable=frame_rate)
+frame_rate_scroller.grid(column=1, row=7, columnspan=2)
+frame_rate_label.grid(column=0, row=7)
+
+bit_rate = DoubleVar()
+bit_rate_label = ttk.Label(settings, text='Bit Rate: ')
+bit_rate_scroller = ttk.Spinbox(settings, from_= 0, to=100, textvariable=bit_rate)
+bit_rate_label.grid(column=0, row=8)
+bit_rate_scroller.grid(column=1, row=8, columnspan=2)
 
 # Button to deal with return to main menu
-main_menur = ttk.Button(settings, text="Stream", command=stream_return)
-main_menur.grid(column=0, row=7, columnspan=2, rowspan=2)
+#main_menur = ttk.Button(settings, text="Stream", command=stream_return)
+#main_menur.grid(column=0, row=7, columnspan=2, rowspan=2)
 
-more_settings = ttk.Button(settings, text="More settings", command=more_settings)
-more_settings.grid(column=2, row=7, rowspan=2)
+#more_settings = ttk.Button(settings, text="More settings", command=more_settings)
+#more_settings.grid(column=2, row=7, rowspan=2)
 
 # More settings ---------------------------------------------------------------------------------------------
 
-settings2.rowconfigure((0,1,2,3), weight=1)
-settings2.columnconfigure((0,1), weight=1)
+#settings2.rowconfigure((0,1,2,3), weight=1)
+#settings2.columnconfigure((0,1), weight=1)
 
 # Touchscreen calibration
 def touchscreen_calibration():
@@ -458,20 +487,8 @@ def touchscreen_calibration():
 screen_calib = ttk.Button(settings2, text="Touchscreen Calibration", command=touchscreen_calibration)
 screen_calib.grid(column=0, row=0, columnspan=2)
 
-frame_rate = DoubleVar()
-frame_rate_label = ttk.Label(settings2, text='Frame Rate:')
-frame_rate_scroller = ttk.Spinbox(settings2, from_= 0, to=100, textvariable=frame_rate)
-frame_rate_scroller.grid(column=1, row=1)
-frame_rate_label.grid(column=0, row=1)
-
-bit_rate = DoubleVar()
-bit_rate_label = ttk.Label(settings2, text='Bit Rate: ')
-bit_rate_scroller = ttk.Spinbox(settings2, from_= 0, to=100, textvariable=bit_rate)
-bit_rate_label.grid(column=0, row=2)
-bit_rate_scroller.grid(column=1, row=2)
-
-stream_button = ttk.Button(settings2, text='Stream', command=stream_return2)
-stream_button.grid(columnspan=2, column=0, row=3)
+#stream_button = ttk.Button(settings2, text='Stream', command=stream_return2)
+#stream_button.grid(columnspan=2, column=0, row=3)
 
 
 # Stream display--------------------------------------------------------------------------------------------------------
@@ -771,8 +788,8 @@ explain what the delay between audio/video is and why it is necessary,
 along with other necessary things...""")
 rick_roll.pack(fill=BOTH)
 
-stream_btn = ttk.Button(tutorial, text="Stream", command=back_tutorial)
-stream_btn.pack()
+#stream_btn = ttk.Button(tutorial, text="Stream", command=back_tutorial)
+#stream_btn.pack()
 
 # Button to deal with return to main menu from tutorial screen
 #main_menur = ttk.Button(tutorial, text="Main menu", command=main_return)
