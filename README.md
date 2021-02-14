@@ -9,12 +9,12 @@ Completed tasks:
  - Added in Keyboard (Matthew)
  - Added in module that imposed a theme to improve UI layout (Sita) 
  - Edited widgits to fit new layouts: arrow buttons, removed main menu, and stopped text extending off screen (Matthew). 
+ - Touchscreen calibration (Abigail)
  
  Tasks currently in progress:
  - Add in mechanism for user to connect to Wifi through touchscreen (Matthew)
        - Done for WEP (need to test)
        - Need to do for WPA and WPA2 (possibly through editing config file, or finding module)
- - Touchscreen calibration (Abigail)
  - Adding in option for user to change brightness/contrast/saturation/rotation/pan/zoom in-out and add effects to displayed image (need to check with patrick about this working on stream, rn it works on preview) (Matthew)
 
 Tasks still to complete/would be nice to do: (please tick these off as appropriate)
