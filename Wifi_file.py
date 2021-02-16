@@ -76,5 +76,3 @@ def disconnect():
 
 conf_file_read = open('/etc/wpa_supplicant/wpa_supplicant.conf', 'r')
 print(conf_file_read.read())
-
-#home = network('Glide0028763-2G', 'B47E0A0FD2')
