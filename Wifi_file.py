@@ -76,3 +76,4 @@ def disconnect():
 
 conf_file_read = open('/etc/wpa_supplicant/wpa_supplicant.conf', 'r')
 print(conf_file_read.read())
+conf_file_read.close()
