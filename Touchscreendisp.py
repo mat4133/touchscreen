@@ -171,6 +171,7 @@ search_label = ttk.Label(wifi_login, text='Nearby Networks')
 search_label.grid(column=0, row=1)
 
 def password_filler(*args):
+    global candidate_network
     saved = 0
     for networks in wf.saved_networks:
         if networks.SSID == args[0]:
@@ -185,21 +186,22 @@ def password_filler(*args):
 candidate_network = 'none'
 
 def connect():
+    global candidate_network
     candidate_network.password = password_text.get()
     wf.save_conf(candidate_network)
     wf.dump()
 
-#search_list = wf.scan()
-search_list = ['list of networks', 'network 1', 'network 2']
+search_list = wf.scan()
+#search_list = ['list of networks', 'network 1', 'network 2']
 
-'''
+
 option_menu_list = []
 for networks in search_list:
     option_menu_list.append(networks.SSID)
-'''
+
 
 current_network = StringVar(value='network 3')
-search_networks = ttk.OptionMenu(wifi_login, current_network, *search_list, command=password_filler)
+search_networks = ttk.OptionMenu(wifi_login, current_network, *option_menu_list, command=password_filler)
 search_networks.grid(column=1, row=1)
 
 
