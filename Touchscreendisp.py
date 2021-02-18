@@ -542,9 +542,7 @@ customise = StringVar()
 customise.set('Customise')
 
 labelscus = ['Customise']
-print(labelscus)
 labelscus.extend(windows_names)
-print(labelscus)
 
 video_customise = ttk.OptionMenu(stream, customise, *labelscus, command=change_mode)
 video_customise.grid(column=2, row=0)
