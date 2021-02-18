@@ -504,9 +504,10 @@ customise_names = [['Reset', vs.make_normal, 'Reset'], ['Make Grey', vs.make_gre
                        , 'Rotate'], ['Zoom in', vs.make_zoom_in, 'Zoom'],
                    ['Zoom out', vs.make_zoom_out, 'Zoom'], [leftarrowrender, vs.make_pan_left, 'Pan'],
                    [rightarrowrender, vs.make_pan_right, 'Pan'], [uparrowrender, vs.make_pan_up, 'Pan'],
-                   [downarrowrender, vs.make_pan_down, 'Pan']]
+                   [downarrowrender, vs.make_pan_down, 'Pan'], ['Emboss', vs.make_emboss, 'Emboss'],
+                   ['Outline', vs.make_edge_detection, 'Outline'], ['Sepia', vs.make_sepia, 'Sepia']]
 
-windows_names = ['Reset', 'Grey', 'Brightness', 'Blur/Sharpen', 'Rotate', 'Zoom', 'Pan']
+windows_names = ['Reset', 'Grey', 'Brightness', 'Blur/Sharpen', 'Rotate', 'Zoom', 'Pan', 'Emboss', 'Outline', 'Sepia']
 windows = list(range(len(windows_names)))
 buttons = list(range(len(customise_names)))
 
@@ -519,7 +520,8 @@ for i in range(len(windows)):
         windows[i].add_button(j)
 
 windows_dic = {'Reset': windows[0], 'Grey': windows[1], 'Brightness': windows[2], 'Blur/Sharpen': windows[3],
-               'Rotate': windows[4], 'Zoom': windows[5], 'Pan': windows[6]}
+               'Rotate': windows[4], 'Zoom': windows[5], 'Pan': windows[6], 'Emboss': windows[7], 'Outline': windows[8],
+               'Sepia': windows[9]}
 
 current_window = windows_dic['Pan']
 current_window.create_window()
@@ -537,9 +539,14 @@ def change_mode(new_window):
 # button for dropdown list where user can change video type
 
 customise = StringVar()
-customise.set('customise')
+customise.set('Customise')
 
-video_customise = ttk.OptionMenu(stream, customise, *windows_names, command=change_mode)
+labelscus = ['Customise']
+print(labelscus)
+labelscus.extend(windows_names)
+print(labelscus)
+
+video_customise = ttk.OptionMenu(stream, customise, *labelscus, command=change_mode)
 video_customise.grid(column=2, row=0)
 
 # displaying preview of stream

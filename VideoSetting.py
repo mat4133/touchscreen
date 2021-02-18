@@ -187,7 +187,8 @@ def show_frame(video_frame, height, width):
             cv2image = cv2image[int(zoom - pan_vertical):int((480-zoom) - pan_vertical), int(1.33333*(zoom + pan_horizontal)):int(640-(1.33333*(zoom - pan_horizontal)))]
         #if rotation != 0:
             #cv2image = cv2.rotate(cv2image, rotateCode=(rotation - 1))
-        cv2image = effects(settings['colour'], cv2image)
+        if ('Emboss' not in effect_list) and ('Edge Detection' not in effect_list):
+            cv2image = effects(settings['colour'], cv2image)
         img = Image.fromarray(cv2image)
     elif show_image == 0:
         img = Image.open("/home/pi/Nothing_To_see.jpg")
