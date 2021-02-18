@@ -1,38 +1,31 @@
 import time
-import picamera
-#from picamera import PiCamera
-import RPi.GPIO as GPIO
+import pickle
+import cv2
+from PIL import Image, ImageTk
 import numpy as np
 import io
 
-GPIO.setwarnings(False)
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(17, GPIO.IN, GPIO.PUD_UP)
 
-video = picamera.PiCamera()
+cap = cv2.VideoCapture(0)
+
+#file_name = 'saved_settings'
+#settings_values = open(file_name,'rb')
+#settings = pickle.load(settings_values)
+
 
 #default settings
-zoom = 1
-preview_Time = 3
-awb_counter = 0
-effect_num = 0
-operation = 1
-Image_num = 1
-Count_capture = 0
-Sav_num = 0
+show_image = 1
 
-def display(Brightness_slider, Saturation_slider, Contrast_slider, Sharpness_slider):
-    video.preview_fullscreen = False
-    video.preview_window = (0,0,320, 480) #Where the window should go
-    video.video_stabilization = True
-    #print("brightenss" + str(Brightness_slider.get()))
-    video.brightness = int(Brightness_slider.get())
-    video.start_preview()
-    video.contrast = int(Contrast_slider.get())
-    video.saturation = int(Saturation_slider.get())
-    video.sharpness = int(Sharpness_slider.get())
+settings = {'rotation':0, 'zoom':0, 'pan_horizontal':0, 'pan_vertical':0, 'colour':'Normal'}
+effect_list = []
+
+def function_maker(function, *part_args):  # takes in the function to make more of + values needed in that function
+    def wraps(*extra_args):
+        argument = list(part_args)
+        argument.extend(extra_args)
+        return function(*argument)
+    return wraps
     
-
 
 #brightness 0 - 99
 #saturation -99 --> 99
@@ -40,76 +33,21 @@ def display(Brightness_slider, Saturation_slider, Contrast_slider, Sharpness_sli
 #contrast -99 --> 99
 
 #to increase the slider
-def slider_increase(slider, sliders_list):
-    if slider.name == "Brightness":
-        parameter = video.brightness
-    elif slider.name == "Contrast":
-        parameter = video.contrast
-    elif slider.name == "Saturation":
-        parameter = video.saturation
-    elif slider.name == "Sharpness":
-        parameter = video.sharpness
-    else:
-        print('parameter error')
-    if parameter > (slider.max-5):
-        parameter += 5
-    else:
-        parameter = slider.max
-    slider.set(parameter)
-    display(*sliders_list)
 
 #to decrease the slider
-def slider_decrease(slider,sliders_list):
-    if slider.name == "Brightness":
-        parameter = video.brightness
-    elif slider.name == "Contrast":
-        parameter = video.contrast
-    elif slider.name == "Saturation":
-        parameter = video.saturation
-    elif slider.name == "Sharpness":
-        parameter = video.sharpness
-    else:
-        print('parameter error')
-    if parameter < (slider.min+5):
-        parameter -= 5
-    else:
-        parameter = slider.min
-    slider.set()
-    display(*sliders_list)
+
 
 #to rotate
-def rotate_clock(sliders_list):
-    video.rotation += 90
-    display(*sliders_list)
 
-def rotate_anticlock(sliders_list):
-    video.rotation -= 90
-    display(*sliders_list)
-
-#zooming in/out
-def zoom_in():
-    #need to work out how the zoom function works here
-    print('test tommorow')
-
-def zoom_out():
-    #need to work out how the zoom function works for this
-    print('test tommorow')
 
 #Modes are as follows:
-
+'''
 def awb(sliders_list, mode):
     print(mode)
     video.AWB_MODES[mode]
     display(*sliders_list)
 
 #Effects are as follows
-
-def effects(sliders_list, effect):
-    print(effect)
-    video.image_effect = effect
-    display(*sliders_list)
-
-#function to detect motion
 
 def motion(motion_slider):
     step = 1
@@ -150,8 +88,135 @@ def motion(motion_slider):
     finally:
         video.close()
         print('Motion detecter terminated')
+'''
+
+def make_normal(*args):
+    global settings, effect_list
+    effect_list = []
+    settings['colour'] = 'Normal'
+
+def make_grey(*args):
+    settings['colour'] = 'Grey'
+
+def make_blur(*args):
+    effect_list.append('Blur')
+    try:
+        effect_list.remove('Sharpen')
+    except ValueError:
+        print('Sharpen not happened yet')
+
+def make_bright(*args):
+    effect_list.append('Bright')
+    try:
+        effect_list.remove('Dark')
+    except ValueError:
+        print('Dark not happened yet')
+
+def make_dark(*args):
+    effect_list.append('Dark')
+    try:
+        effect_list.remove('Bright')
+    except ValueError:
+        print('Dark not happened yet')
 
 
+def make_edge_detection(*args):
+    effect_list.append('Edge Detection')
+
+def make_emboss(*args):
+    effect_list.append('Emboss')
+
+def make_sharpen(*args):
+    effect_list.append('Sharpen')
+    try:
+        effect_list.remove('Blur')
+    except ValueError:
+        print('Blur not happened yet')
+
+def make_sepia(*args):
+    settings['colour'] = 'Sepia'
+
+def make_zoom_in():
+    settings['zoom'] += 10
+
+def make_zoom_out():
+    settings['zoom'] -= 10
+
+def make_pan_right():
+    settings['pan_horizontal'] += 10
+
+def make_pan_left():
+    settings['pan_horizontal'] -= 10
+
+def make_pan_up():
+    settings['pan_vertical'] += 10
+
+def make_pan_down():
+    settings['pan_vertical'] -= 10
+
+def make_clockwise_rotate():
+    settings['rotation'] += 1
+    if settings['rotation'] == 4:
+        settings['rotation'] = 0
+
+def make_anticlockwise_rotate():
+    settings['rotation'] -= 1
+    if settings['rotation'] == -1:
+        settings['rotation'] = 3
+
+def make_show_image():
+    global show_image
+    if show_image == 0:
+        show_image = 1
+    elif show_image == 1:
+        show_image = 0
 
 
+def show_frame(video_frame, height, width):
+    global show_image, settings, effect_list
+    _, frame = cap.read()
+    cv2image = cv2.flip(frame, 1)
+    zoom = settings['zoom']
+    pan_horizontal = settings['pan_horizontal']
+    pan_vertical = settings['pan_vertical']
+    rotation = settings['rotation']
+    if show_image == 1:
+        for effect in effect_list:
+            cv2image = effects(effect, cv2image)
+        if settings['zoom'] != 0:
+            cv2image = cv2image[int(zoom - pan_vertical):int((480-zoom) - pan_vertical), int(1.33333*(zoom + pan_horizontal)):int(640-(1.33333*(zoom - pan_horizontal)))]
+        #if rotation != 0:
+            #cv2image = cv2.rotate(cv2image, rotateCode=(rotation - 1))
+        cv2image = effects(settings['colour'], cv2image)
+        img = Image.fromarray(cv2image)
+    elif show_image == 0:
+        img = Image.open("/home/pi/Nothing_To_see.jpg")
+    '''
+    if int(float(img.size[0]) / float(img.size[1])) < int(4 / 3):
+        hsize = int((float(img.size[1]) / float(width / float(img.size[0]))))
+        wsize = int(hsize * float(3 / 4))
+    else:
+        hsize = int((float(img.size[1]) * float(width / float(img.size[0]))))
+        wsize = width
+    '''
+    wsize = width
+    hsize = height
+    img = img.resize((int(wsize), int(hsize)), Image.ANTIALIAS)
+    imgtk = ImageTk.PhotoImage(image=img)
+    video_frame.imgtk = imgtk
+    video_frame.configure(image=imgtk)
+    frame_show = function_maker(show_frame, video_frame, height, width)
+    video_frame.after(5, frame_show)
 
+def effects(effect_input, frame):
+    effect = {'Normal': cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA),
+              'Grey': cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY),
+              'Blur': cv2.GaussianBlur(frame, (15, 15), 0),
+              'Bright': cv2.convertScaleAbs(frame, beta=100),
+              'Dark': cv2.convertScaleAbs(frame, beta=-50),
+              'Edge Detection': cv2.Canny(frame, 100, 100),
+              'Emboss': cv2.filter2D(frame, -1, np.array([[0, -1, -1], [1, 0, -1], [1, 1, 0]])),
+              'Sharpen': cv2.filter2D(frame, -1, np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])),
+              'Sepia': cv2.filter2D(frame, -1,
+                                    np.array([[0.272, 0.534, 0.131], [0.349, 0.686, 0.168], [0.393, 0.769, 0.189]]))}
+    return effect[effect_input]

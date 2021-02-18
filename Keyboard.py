@@ -89,7 +89,7 @@ def create_keyboard(frame, entry, text, style, off):
             elif i == "num":
                 cmd = function_maker(frame_change, Framelist[l], numframe)
             elif i == "del":
-                cmd = function_maker(delete)
+                cmd = function_maker(delete, entry, text)
             elif i == "space":
                 cmd = function_maker(click, ' ', entry, text)
             elif i == "\ ":

@@ -3,6 +3,7 @@ import pickle
 from wifi import Cell
 
 
+
 class network():
     def __init__(self, SSID, password, encryption):
         self.SSID = SSID
@@ -10,6 +11,7 @@ class network():
         self.priority = 0
         self.encryption = encryption
 
+saved_networks = []
 
 def scan():
     wifi_list = list(Cell.all('wlan0'))
@@ -22,12 +24,19 @@ def scan():
                 display_list.append(network(networks.ssid, 'unknown', networks.encryption_type))
             else:
                 display_list.append(network(networks.ssid, 'N/A', 'None'))
+    return display_list
+
 
 def dump():
     global saved_networks
     network_file = open('Saved_wifi', 'wb')
-    saved_networks = []
     pickle.dump(saved_networks, network_file)
+    network_file.close()
+
+def save_get():
+    global saved_networks
+    network_file = open('Saved_wifi', 'rb')
+    saved_networks = pickle.load(network_file)
     network_file.close()
 
 def save_conf(*args):
@@ -35,7 +44,7 @@ def save_conf(*args):
     candidate_network = args[0]
     if candidate_network in saved_networks:
         print('This network has already been saved')
-    else:
+    elif candidate_network != 'none':
         saved_networks.append(candidate_network)
         change_priority(candidate_network)
     conf_file = open('/etc/wpa_supplicant/wpa_supplicant.conf', 'w')
@@ -74,6 +83,6 @@ def connect():
 def disconnect():
     os.system('sudo ifconfig wlan0 down')
 
-conf_file_read = open('/etc/wpa_supplicant/wpa_supplicant.conf', 'r')
-print(conf_file_read.read())
-conf_file_read.close()
+#conf_file_read = open('/etc/wpa_supplicant/wpa_supplicant.conf', 'r')
+
+#home = network('Glide0028763-2G', 'B47E0A0FD2')

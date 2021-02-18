@@ -3,69 +3,104 @@ from tkinter import messagebox, _setit, ttk
 from PIL import Image, ImageTk
 from ttkthemes import ThemedStyle
 from Keyboard import create_keyboard, keyboard_on, function_maker
+import Wifi_file as wf
 import VideoSetting as vs
 import pickle
 import os
+import threading
+import cv2
 
+# See README for information about this
+
+starting = 0
 audio_connection = 0
 video_connection = 0
 
-# The following code should:
-# Produce a touchscreen display with 3 windows: main menu, settings, and stream
+class Customise_button(ttk.Button):
+    def __init__(self, parent, text, command):
+        self.parent = parent
+        if type(text).__name__ == 'PhotoImage':
+            self.name = 'arrow'
+            super().__init__(stream, image=text, command=command)
+        else:
+            self.name = text
+            super().__init__(stream, text=text, command=command)
 
-# In the section stream:
-# user to be able to start/stop stream
-# user to be able to pan to focus on parts of the stream
-# user to be warned if they try to stream w_out:
-#   internet
-#   valid stream key
-#   audio and video devices connected
-
-# In the settings:
-# user to input a stream key which is then saved (and accessable on future uses of device)
-# user to connect to wifi (and likewise have this saved to be done automatically)
-# user to add it in a delay between audio and video (and likewise have this be saved)
-# user to select whether streaming with/without audio is possible
-
-# This application should boot up upon turning the power on the pi (needs to be configured within the pi you are using
-# more work needs to be done)
-
-# Possible other options that to investigate:
-# Displaying current battery life
-# Displaying the devices connected (if more than one are connected the user could choose between them???)
-# Adding in a helpful tutorial explainig how this works from the main menu section
-# Having it so that the user can download the os system for the pi with everything already set up
-# (possibly by copying an already set up os onto an SD card,not too sure how to do this but would be useful)
-# Turning off the screen after 5 minutes (like sleep mode or something to save battery)
-# Potentially add in HDMI output
+    def __repr__(self):
+        return (self.name)
 
 
-# SITA (i have removed the connection between the wifi button and anything so it calls nothing (and hence won't cause it
-# to crash when you run it)
+class Customise_window():
+    def __init__(self, name):
+        self.name = name
+        self.button_list = []
 
-class name_scale(ttk.Scale):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.name = 'Unnamed'
-        self.max = 0
-        self.min = 0
+    def add_button(self, button):
+        if button.parent == self.name:
+            self.button_list.append(button)
+
+    def create_window(self):
+        if len(self.button_list) == 1:
+            self.button_list[0].grid(column=0, row=3, columnspan=2)
+        if len(self.button_list) == 2:
+            self.button_list[0].grid(column=0, row=3, columnspan=2)
+            self.button_list[1].grid(column=2, row=1, rowspan=2)
+        if len(self.button_list) == 4:
+            self.button_list[0].grid(column=0, row=3)
+            self.button_list[1].grid(column=1, row=3)
+            self.button_list[2].grid(column=2, row=1)
+            self.button_list[3].grid(column=2, row=2)
+
+    def close_window(self):
+        for i in self.button_list:
+            i.grid_forget()
+
+    def __repr__(self):
+        return self.button_list.__repr__()
+
+# Functions for resetting back to the default settings
+def set_defaults():
+    settings_file = open('settings_file', 'wb')
+    settings_dic = {'bit_rate': 30, 'frame_rate': 30, 'audioless': False, 'audio_delay': 200}
+    pickle.dump(settings_dic, settings_file)
+    settings_file.close()
 
 
-screen_size = 1 #to switch between 320x240, and 480x320 (0 is 320x240)
+# Function for reading the settings from settings_file
+def inital_settings():
+    global frame_rate, delay_value, chk_state, bit_rate
+    previous_settings = open('settings_file', 'rb')
+    saved_values = pickle.load(previous_settings)
+    chk_state = IntVar(value=saved_values['audioless'])
+    bit_rate = DoubleVar(value=saved_values['bit_rate'])
+    frame_rate = DoubleVar(value=saved_values['frame_rate'])
+    delay_value = DoubleVar(value=saved_values['audio_delay'])
+    previous_settings.close()
+
+
+# Function for updating file every 5 seconds with new settings
+def update_settings(*args):
+    global frame_rate, delay_value, chk_state, bit_rate
+    settings_dic = {'bit_rate': bit_rate.get(), 'frame_rate': frame_rate.get(), 'audioless': chk_state.get(),
+                    'audio_delay': delay_value.get()}
+    settings_file = open('settings_file', 'wb')
+    pickle.dump(settings_dic, settings_file)
+    settings_file.close()
+    threading.Timer(5, update_settings).start()
+
 
 app = Tk()
 
 app.title('Streaming on a prayer')
-if screen_size == 0:
-    app.geometry('320x240')  # swap to fullscreen when using touchscreen
-else:
-    app.attributes('-fullscreen', True)
 
-#initializing style
+app.geometry('480x320')  # swap to fullscreen when using touchscreen
+# app.attributes('-fullscreen', True)
+
+# initializing style
 style = ThemedStyle(app)
 style.set_theme("equilux")
 
-#background colour from theme equilux
+# background colour from theme equilux
 bg = style.lookup('TFrame', 'background')
 fg = style.lookup('TFrame', 'foreground')
 app.configure(bg=style.lookup('TFrame', 'background'))
@@ -84,7 +119,6 @@ settings = ttk.Frame(note)
 wifi_login = ttk.Frame(note)
 tutorial = ttk.Frame(note)
 
-
 note.add(stream, text="STREAM")
 note.add(settings, text="SETTINGS")
 note.add(wifi_login, text="WIFI")
@@ -92,141 +126,40 @@ note.add(tutorial, text="TUTORIAL")
 
 settings2 = ttk.Frame(app)
 
-
-# setting up main menu
-#stream.pack(padx=0, pady=0, expand=True, fill=BOTH)
-
-# Changing from stream to settings screen
-#def change_settings():
-#    stream.pack_forget()
-#    settings.pack(padx=0, pady=0, expand=True, fill=BOTH)
-
-#def back_tutorial():
-#    tutorial.pack_forget()
-#    stream.pack(padx=0, pady=0, expand=True, fill=BOTH)
-
-# stream to tutorial screen
-#def change_tutorial():
-#    stream.pack_forget()
-#    tutorial.pack(padx=0, pady=0, expand=TRUE, fill=BOTH)
-    
-# settings to wifi login    
-#def change_wifi():
-#    settings.pack_forget()
-#    wifi_login.pack(padx=0, pady=0, expand=TRUE, fill=BOTH)
-    
-# wifi login to settings
-#def back_settings():
-#    wifi_login.pack_forget()
-#    settings.pack(padx=0, pady=0, expand=TRUE, fill=BOTH)
-
-# Main menu display (now removed)--------------------------------------------------------------------------------------
-
-# need to add diocese of durham + durham uni logos
-# (use PIL and copy resizing process used for arrows below to make your life easier [or I can add them in if you want])
-
-"""
-main_menu.grid_rowconfigure((1, 2, 3), weight=2)
-main_menu.grid_rowconfigure(0, weight=3)
-main_menu.grid_columnconfigure((0, 1, 2), weight=1)
-"""
-
-"""
-stream_btn = ttk.Button(main_menu, text="STREAM", command=change_stream)
-stream_btn.grid(column=1, row=2)
-"""
-
-"""
-Menu_lbl = ttk.Label(stream, text="MAIN MENU")
-Menu_lbl.grid(column=1, row=0)
-"""
-
 # Settings display------------------------------------------------------------------------------------------------------
 
 # Configuring grid layout for settings window
 settings.grid_columnconfigure(0, weight=2)
-settings.grid_columnconfigure((1,2), weight=1)
+settings.grid_columnconfigure((1, 2), weight=1)
 settings.grid_rowconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8), weight=1)
 
+
 # Wifi login and code ----------------------------------------------------------------------
-
-#DONT UNCOMMENT THIS (or it will not work)
-''' 
-wifi_storage = 'wifi_storage'
-
-sample_wifi_list = {'network1':'GNU'}
-
-stored_network = open(wifi_storage, 'wb')
-pickle.dump(sample_wifi_list,stored_network)
-stored_network.close()
-
-stored_network1 = open(wifi_storage, 'rb')
-saved_networks = pickle.load(stored_network1)
-stored_network1.close()
-
-def wifi_connect():
-    try:
-        os.system('sudo ifconfig wlan0 up')
-        command = 'sudo iwconfig wlan0 essid' + username_entr.get() + 'key s:' + password_entr.get()
-        os.system(command)
-        os.system('sudo dhclient wlan0')
-    except:
-        messagebox.showwarning('Either: wrong username/password or wrong type of network (still working on WPA/WPA2)')
-
-'''
-
-def username_space_wifi(*args):
-    connect_btn.grid_forget()
-    wifi_label.grid_forget()
-    saved_lbl.grid_forget()
-    saved_menu.grid_forget()
-    wifi_connected.grid_forget()
-    password_lbl.grid_forget()
-    password_entr.grid_forget()
-    username_entr.grid(column=1, row=1)
-    username_lbl.grid(column=0, row=1)
-    keyboard_on(keyboard_frame2.children['!frame'])
-
-def username_keyboard_off(current_frame):
-    current_frame.grid_forget()
-    keyboard_frame2.grid_forget()
-    saved_lbl.grid(column=0,row=1)
-    saved_menu.grid(column=1,row=1)
-    wifi_label.grid(column=0, row=0)
-    wifi_connected.grid(column=1, row=0)
-    connect_btn.grid(column=1, row=4)
-    username_entr.grid(column=1, row=2)
-    username_lbl.grid(column=0, row=2)
-    password_lbl.grid(column=0, row=3)
-    password_entr.grid(column=1, row=3)
 
 def password_space_wifi(*args):
     connect_btn.grid_forget()
     wifi_label.grid_forget()
-    saved_lbl.grid_forget()
-    saved_menu.grid_forget()
     wifi_connected.grid_forget()
-    username_entr.grid_forget()
-    username_lbl.grid_forget()
-    password_entr.grid(column=1, row=1)
-    password_lbl.grid(column=0, row=1)
+    keyboard_frame3.grid(column=0, row=4, columnspan=2, rowspan=2)
     keyboard_on(keyboard_frame3.children['!frame'])
+
 
 def password_keyboard_off(current_frame):
     current_frame.grid_forget()
-    keyboard_frame3.grid_forget()
     wifi_label.grid(column=0, row=0)
-    saved_lbl.grid(column=0,row=1)
-    saved_menu.grid(column=1,row=1)
     wifi_connected.grid(column=1, row=0)
-    password_entr.grid(column=1, row=3)
-    password_lbl.grid(column=0,row=3)
-    username_entr.grid(column=1, row=2)
-    username_lbl.grid(column=0, row=2)
-    connect_btn.grid(column=1, row=4)
+    search_label.grid(column=0, row=1)
+    search_networks.grid(column=1, row=1)
+    password_entr.grid(column=1, row=2)
+    password_lbl.grid(column=0, row=2)
+    connect_btn.grid(column=1, row=3)
+    keyboard_frame3.grid_forget()
+    # username_entr.grid(column=1, row=2)
+    # username_lbl.grid(column=0, row=2)
 
-wifi_login.grid_rowconfigure((0,1,2,3,4), weight = 1)
-wifi_login.grid_columnconfigure((0,1), weight = 1)
+
+wifi_login.grid_rowconfigure((0, 1, 2, 3, 4), weight=1)
+wifi_login.grid_columnconfigure((0, 1), weight=1)
 
 # Code for Wifi connection
 wifi_label = ttk.Label(wifi_login, text='WiFi')
@@ -234,53 +167,69 @@ wifi_label.grid(column=0, row=0)
 wifi_connected = ttk.Label(wifi_login, text='Unconnected')
 wifi_connected.grid(column=1, row=0)
 
-saved_lbl = ttk.Label(wifi_login, text='SAVED NETWORKS', )
-saved_lbl.grid(column=0,row=1)
+search_label = ttk.Label(wifi_login, text='Nearby Networks')
+search_label.grid(column=0, row=1)
 
-saved_networks = ['Placeholder']
-current_network = StringVar()
-current_network.set('Placeholder')
+def password_filler(*args):
+    saved = 0
+    for networks in wf.saved_networks:
+        if networks.SSID == args[0]:
+            password_text.set(networks.password)
+            saved = 1
+    for networks in search_list:
+        if networks.SSID == args[0]:
+            candidate_network = networks
+    if saved == 0:
+        password_text.set('')
 
-saved_menu = ttk.OptionMenu(wifi_login, current_network, *saved_networks)
-saved_menu.grid(column=1,row=1)
+candidate_network = 'none'
 
-username_lbl = ttk.Label(wifi_login, text='USERNAME:')
-username_lbl.grid(column=0, row=2)
+def connect():
+    candidate_network.password = password_text.get()
+    wf.save_conf(candidate_network)
+    wf.dump()
 
-username_text = StringVar()
-username_entr = ttk.Entry(wifi_login, textvariable = username_text )
-username_entr.grid(column=1, row=2)
-username_entr.bind("<Button>", username_space_wifi)
+#search_list = wf.scan()
+search_list = ['list of networks', 'network 1', 'network 2']
+
+'''
+option_menu_list = []
+for networks in search_list:
+    option_menu_list.append(networks.SSID)
+'''
+
+current_network = StringVar(value='network 3')
+search_networks = ttk.OptionMenu(wifi_login, current_network, *search_list, command=password_filler)
+search_networks.grid(column=1, row=1)
+
 
 password_lbl = ttk.Label(wifi_login, text='PASSWORD:')
-password_lbl.grid(column=0, row=3)
+password_lbl.grid(column=0, row=2)
 
 password_text = StringVar()
-password_entr = ttk.Entry(wifi_login, textvariable = password_text)
-password_entr.grid(column=1, row=3)
+password_entr = ttk.Entry(wifi_login, textvariable=password_text)
+password_entr.grid(column=1, row=2)
 password_entr.bind("<Button>", password_space_wifi)
 
-connect_btn = ttk.Button(wifi_login, text='CONNECT / SAVE')
-connect_btn.grid(columnspan=2, row=4)
-
-keyboard_frame2 = Frame(wifi_login)
-keyboard_frame2.configure(bg=style.lookup('TFrame', 'background'))
-keyboard_frame2.grid(column=0, row=2, columnspan=2, rowspan=2)
-keyboard_frame2.rowconfigure(0,weight=1)
-keyboard_frame2.columnconfigure(0,weight=1)
-
-keyboard_frame2 = create_keyboard(keyboard_frame2, username_entr, username_text, style, username_keyboard_off)
+connect_btn = ttk.Button(wifi_login, text='CONNECT/SAVE', command=connect)
+connect_btn.grid(columnspan=2, row=3)
 
 keyboard_frame3 = Frame(wifi_login)
 keyboard_frame3.configure(bg=style.lookup('TFrame', 'background'))
-keyboard_frame3.grid(column=0, row=2, columnspan=2, rowspan=2)
+keyboard_frame3.grid(column=0, row=4, columnspan=2, rowspan=2)
 keyboard_frame3.rowconfigure(0, weight=1)
 keyboard_frame3.columnconfigure(0, weight=1)
 
 keyboard_frame3 = create_keyboard(keyboard_frame3, password_entr, password_text, style, password_keyboard_off)
 
-#Settings frame--------------------------------------------------------------------------------------
+# Settings frame--------------------------------------------------------------------------------------
 
+# importing default settings -------------------------------------------------------------------------
+
+if starting == 0:
+    inital_settings()
+    update_settings()
+    starting = 1
 
 # code for saving and importing streams
 
@@ -346,6 +295,7 @@ def change_code():
     chosen_code = value.get()
     current_code['text'] = chosen_code
 
+
 # check to make see if this is the first time (check list in file is not empty, if empty have none come up)
 
 current_codetext = code_list[0]
@@ -355,6 +305,7 @@ stream_label = ttk.Label(settings, text='Current stream key:')
 stream_label.grid(column=0, row=1)
 current_code = ttk.Label(settings, text=current_codetext)
 current_code.grid(column=1, row=1, columnspan=2)
+
 
 # function to clear space for keyboard
 def keyboard_space_settings(*args):
@@ -371,6 +322,7 @@ def keyboard_space_settings(*args):
     frame_rate_scroller.grid_forget()
     bit_rate_scroller.grid_forget()
     keyboard_on(keyboard_frame1.children['!frame'])
+
 
 def reset_page(current_frame):
     current_frame.grid_forget()
@@ -393,7 +345,7 @@ stream_inputlabel = ttk.Label(settings, text='Enter key:')
 stream_inputlabel.grid(column=0, row=2)
 stream_text = StringVar()
 stream_code = ttk.Entry(settings, textvariable=stream_text)
-stream_code.bind("<Button>",keyboard_space_settings)
+stream_code.bind("<Button>", keyboard_space_settings)
 stream_code.grid(column=1, row=2)
 stream_enter = ttk.Button(settings, text='Use key', command=enter_code)
 stream_enter.grid(column=2, row=2)
@@ -404,7 +356,7 @@ keyboard_frame1.grid(column=0, row=4, columnspan=3, rowspan=4)
 keyboard_frame1.rowconfigure(0, weight=1)
 keyboard_frame1.columnconfigure(0, weight=1)
 
-keyboard_frame1 = create_keyboard(keyboard_frame1,stream_code,stream_text,style,reset_page)
+keyboard_frame1 = create_keyboard(keyboard_frame1, stream_code, stream_text, style, reset_page)
 
 # User to choose stream key (should appear in order of last used)
 stream_p_label = ttk.Label(settings, text="Saved keys:")
@@ -425,8 +377,6 @@ clear_button = ttk.Button(settings, text='Clear keys', command=clear_code)
 clear_button.grid(column=1, row=4, columnspan=2)
 
 # Allow stream w_out audio?
-chk_state = IntVar()
-chk_state.set(False)
 audio_chklbl = ttk.Label(settings, text='Audioless streaming:')
 audio_chklbl.grid(column=0, row=5)
 audio_chk = ttk.Checkbutton(settings, var=chk_state)
@@ -437,65 +387,38 @@ delay_lbl = ttk.Label(settings, text="Audio-video delay:")
 delay_lbl.grid(column=0, row=6)
 BckLbl = ttk.Label(settings, text='')
 BckLbl.grid(column=1, row=6, columnspan=2)
-var = DoubleVar(value=200)  # initial value
-delay = ttk.Spinbox(settings, from_=-5000, to=5000, increment=20, textvariable=var)
+
+# initial value
+delay = ttk.Spinbox(settings, from_=-5000, to=5000, increment=20, textvariable=delay_value)
 delay.grid(column=1, row=6, columnspan=2)
 
-
-# return to main_menu
-
-#def stream_return():
-#    settings.pack_forget()
-#    stream.pack(padx=1, pady=1, expand=True, fill=BOTH)
-
-#def stream_return2():
-#    settings2.pack_forget()
-#    stream.pack(padx=1, pady=1, expand=True, fill=BOTH)
-
-#def more_settings():
-#    settings.pack_forget()
-#    settings2.pack(padx=1,pady=1,expand=True, fill=BOTH)
-
-frame_rate = DoubleVar()
 frame_rate_label = ttk.Label(settings, text='Frame Rate:')
-frame_rate_scroller = ttk.Spinbox(settings, from_= 0, to=100, textvariable=frame_rate)
+frame_rate_scroller = ttk.Spinbox(settings, from_=0, to=100, textvariable=frame_rate)
 frame_rate_scroller.grid(column=1, row=7, columnspan=2)
 frame_rate_label.grid(column=0, row=7)
 
-bit_rate = DoubleVar()
 bit_rate_label = ttk.Label(settings, text='Bit Rate: ')
-bit_rate_scroller = ttk.Spinbox(settings, from_= 0, to=100, textvariable=bit_rate)
+bit_rate_scroller = ttk.Spinbox(settings, from_=0, to=100, textvariable=bit_rate)
 bit_rate_label.grid(column=0, row=8)
 bit_rate_scroller.grid(column=1, row=8, columnspan=2)
 
-# Button to deal with return to main menu
-#main_menur = ttk.Button(settings, text="Stream", command=stream_return)
-#main_menur.grid(column=0, row=7, columnspan=2, rowspan=2)
-
-#more_settings = ttk.Button(settings, text="More settings", command=more_settings)
-#more_settings.grid(column=2, row=7, rowspan=2)
 
 # More settings ---------------------------------------------------------------------------------------------
 
-#settings2.rowconfigure((0,1,2,3), weight=1)
-#settings2.columnconfigure((0,1), weight=1)
 
 # Touchscreen calibration
 def touchscreen_calibration():
     os.system("usr/bin/xinput_calibrator | tail -6 > /etc/X11/xorg.conf.d/99-calibration.conf")
-    
+
+
 screen_calib = ttk.Button(settings2, text="Touchscreen Calibration", command=touchscreen_calibration)
 screen_calib.grid(column=0, row=0, columnspan=2)
 
-#stream_button = ttk.Button(settings2, text='Stream', command=stream_return2)
-#stream_button.grid(columnspan=2, column=0, row=3)
-
-
 # Stream display--------------------------------------------------------------------------------------------------------
 
-stream.grid_rowconfigure((0,3), weight=2)
-stream.grid_rowconfigure((1,2), weight=3)
-stream.grid_columnconfigure((0,1), weight=1)
+stream.grid_rowconfigure((0, 3), weight=2)
+stream.grid_rowconfigure((1, 2), weight=3)
+stream.grid_columnconfigure((0, 1), weight=1)
 stream.grid_rowconfigure(1, weight=4)
 
 
@@ -524,19 +447,10 @@ def start_stream():
 
         # Here is the section where the code to start the stream should go
         #
-        #
-        #
-        #
-        #
-        #
 
 
 def stop_stream():
     # insert code for stopping stream here
-    #
-    #
-    #
-    #
     #
     go_btn.configure(text='Go', bg='green', command=start_stream)
 
@@ -545,241 +459,99 @@ def stop_stream():
 go_btn = ttk.Button(stream, text='Go', command=start_stream)
 go_btn.grid(column=2, row=3)
 
-# Button to deal with return to main menu from stream screen
-#main_menur = ttk.Button(stream, text="Main menu", command=main_return)
-#main_menur.grid(column=1, row=1)
-
-def zoom():
-
-    up_arr.grid_forget()
-    down_arr.grid_forget()
-    left_arr.grid_forget()
-    right_arr.grid_forget()
-
-    zoom_in.grid(rowspan=2, row=1, column=2)
-    zoom_out.grid(columnspan=2, row=3, column=0)
-
-def pan():
-
-    zoom_in.grid_forget()
-    zoom_out.grid_forget()
-
-    up_arr.grid(column=2, row=1)
-    down_arr.grid(column=2,row=2)
-    left_arr.grid(row=3, column=0)
-    right_arr.grid(row=3, column=1)
-
 
 # Button to select between video options
 
-current_mode = 'pan'
+arrow_width = 40
+arrow_height = 40
 
-#creating buttons and scroll bars for different video customizations
-
-options = ('Brightness','Saturation','Sharpness','Contrast','rotation','zoom','pan','modes','effects')
-slider_options = ('Brightness','Saturation','Sharpness','Contrast')
-
-slider_list = list(range(12)) #list containing all buttons on pages with sliders
-sliders_list = [] #list containing all the sliders
-video_storage = [vs.video.brightness, vs.video.saturation, vs.video.sharpness, vs.video.contrast]
-
-slider_counter = 0
-slidercounter2 = 0
-
-for sliders in slider_options:
-    slider_list[slider_counter] = ttk.Button(stream, text='Increase')
-    slider_list[slider_counter+1] = ttk.Button(stream, text='Decrease')
-    slider_list[slider_counter+2] = name_scale(stream, from_=0, to=100)
-    slider_list[slider_counter+2].name = sliders
-    slider_list[slider_counter+2].max = 100
-    slider_list[slider_counter+2].min = 0
-    slider_list[slider_counter+2].set(video_storage[slidercounter2])
-    sliders_list.append(slider_list[slider_counter+2])
-    
-    slidercounter2 += 1
-    slider_counter += 3
-
-vs.display(*sliders_list)
-
-slider_counter = 0
-slidercounter2 = 0
-
-slider_function = list(range(8))
-
-for sliders in sliders_list:
-    slider_function[slider_counter] = function_maker(vs.slider_increase, sliders_list[slidercounter2], sliders_list)
-    slider_function[slider_counter+1] = function_maker(vs.slider_decrease, sliders_list[slidercounter2], sliders_list)
-    slider_counter += 2
-    slidercounter2 += 1
-
-slider_counter = 0
-function_counter = 0
-
-for sliders in slider_options:
-    slider_list[slider_counter].configure(command=slider_function[function_counter])
-    slider_list[slider_counter+1].configure(command=slider_function[function_counter+1])
-    slider_counter += 3
-    function_counter += 2
-
-mode_text = StringVar()
-effect_text = StringVar()
-effect_text.set('Effect')
-mode_text.set('Mode')
-
-mode_options = ('auto', 'sunlight', 'cloudy', 'shade', 'tungsten', 'fluorescent', 'incandescent', 'flash', 'horizon', 'off')
-effect_options = ('none', 'negative', 'solarize', 'sketch', 'denoise', 'emboss', 'oilpaint', 'hatch', 'qpen', 'pastel',
-'watercolour', 'film', 'blur', 'saturation', 'colorswap', 'washedout', 'posterise', 'colorpoint', 'colorbalance', 'cartoon'
-'deinterlace1', 'deinterlace2')
-
-
-mode_menu = ttk.OptionMenu(stream, mode_text, *mode_options, command=function_maker(vs.awb, sliders_list)) # use function maker on these ones
-effect_menu = ttk.OptionMenu(stream, effect_text, *effect_options, command=function_maker(vs.effects, sliders_list)) #user function maker on these
-
-anti_clock = ttk.Button(stream, text='Anticlockwise', command=function_maker(vs.rotate_anticlock, sliders_list))
-clock = ttk.Button(stream, text='Clockwise', command=function_maker(vs.rotate_clock, sliders_list))
-
-zoom_in = ttk.Button(stream, text='Zoom In', command=vs.zoom_in)
-zoom_out = ttk.Button(stream, text='Zoom Out', command=vs.zoom_out)
-
-#function to change the thing being customized
-
-def change_mode(*args):
-    global current_mode
-    #print(current_mode)
-    if current_mode == "Brightness" or current_mode == "Saturation" or current_mode == "Sharpness" or current_mode == "Contrast":
-        value = options.index(current_mode)
-        slider_list[3*value].grid_forget()
-        slider_list[3 * value+1].grid_forget()
-        slider_list[3 * value+2].grid_forget()
-    elif current_mode == "pan":
-        up_arr.grid_forget()
-        down_arr.grid_forget()
-        left_arr.grid_forget()
-        right_arr.grid_forget()
-    elif current_mode == 'effects':
-        effect_menu.grid_forget()
-    elif current_mode == 'modes':
-        mode_menu.grid_forget()
-    elif current_mode == 'zoom':
-        zoom_in.grid_forget()
-        zoom_out.grid_forget()
-    elif current_mode == 'rotation':
-        anti_clock.grid_forget()
-        clock.grid_forget()
-    value = options.index(args[0])
-    if args[0] == 'Brightness' or args[0] == 'Saturation' or args[0] == 'Sharpness' or args[0] == 'Contrast':
-        slider_list[3*value].grid(column=2,row=1)
-        slider_list[3*value+1].grid(column=2,row=2)
-        slider_list[3*value+2].grid(column=0,row=3, columnspan=2)
-    elif args[0] == 'effects':
-        effect_menu.grid(column=0,row=3,columnspan=2)
-    elif args[0] == 'modes':
-        mode_menu.grid(column=0, row=3, columnspan=2)
-    elif args[0] == 'zoom':
-        zoom_in.grid(column=2, row=1, rowspan=2)
-        zoom_out.grid(column=0, row=3, columnspan=2)
-    elif args[0] == 'rotation':
-        anti_clock.grid(column=2, row=1, rowspan=2)
-        clock.grid(column=0,row=3,columnspan=2)
-    elif args[0] == 'pan':
-        up_arr.grid(column=2, row=1)
-        down_arr.grid(column=2, row=2)
-        left_arr.grid(row=3, column=0)
-        right_arr.grid(row=3, column=1)
-    current_mode = args[0]
-
-
-#button for dropdown list where user can change video type
-
-customise = StringVar()
-customise.set('customise')
-
-video_button = ttk.OptionMenu(stream, customise, *options, command=change_mode)
-video_button.grid(column=2,row=0)
-
-
-#60 and 50 for big screen
-
-if screen_size == 0:
-    arrow_width = 40
-    arrow_height = 40
-else:
-    arrow_width = 60
-    arrow_height = 50
-
-# Setting up frame for up/down arrows
-
-uparrow = Image.open("/home/pi/touchscreen/Touchscreen_photos/UpArrow.png")  # needs to be whatever your directory is
-
-# adjusting up arrow size
+uparrow = Image.open(
+    "\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\UpArrow.png")  # needs to be
+# whatever your directory is
 up_per = (arrow_width / float(uparrow.size[0]))
 height = int((float(uparrow.size[1]) * float(up_per)))
 uparrow = uparrow.resize((arrow_width, height))
 uparrowrender = ImageTk.PhotoImage(uparrow)
 
-up_arr = ttk.Button(stream, image=uparrowrender)
-up_arr.image = uparrowrender
-up_arr.grid(column=2, row=1)
-
-downarrow = Image.open("/home/pi/touchscreen/Touchscreen_photos/DownArrow.png")  # needs to be whatever your directory is
-
-# adjusting down arrow size
+downarrow = Image.open(
+    "\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\DownArrow.png")  # needs to be
+# whatever your directory is
 down_per = (arrow_width / float(downarrow.size[0]))
 height = int((float(downarrow.size[1]) * float(down_per)))
 downarrow = downarrow.resize((arrow_width, height))
 downarrowrender = ImageTk.PhotoImage(downarrow)
 
-down_arr = ttk.Button(stream, image=downarrowrender)
-down_arr.image = downarrowrender
-down_arr.grid(column=2, row=2)
-
-# buttons for panning left/right
-
-# Setting up frame for left/right arrows
-
-leftarrow = Image.open("/home/pi/touchscreen/Touchscreen_photos/LeftArrow.png")  # needs to be whatever your directory is
-
-# adjusting left arrow size
+leftarrow = Image.open(
+    "\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\LeftArrow.png")  # needs to be
+# whatever your directory is
 left_per = (arrow_height / float(leftarrow.size[0]))
 height = int((float(leftarrow.size[1]) * float(left_per)))
 leftarrow = leftarrow.resize((arrow_height, height))
 leftarrowrender = ImageTk.PhotoImage(leftarrow)
-left_arr = ttk.Button(stream, image=leftarrowrender)
 
-left_arr.image = leftarrowrender
-left_arr.grid(row=3, column=0)
-
-rightarrow = Image.open("/home/pi/touchscreen/Touchscreen_photos/RightArrow.png")  # needs to be whatever your directory is
-
-# adjusting right arrow size
-
+rightarrow = Image.open(
+    "\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\RightArrow.png")  # needs to be
+# whatever your directory is
 right_per = (arrow_height / float(rightarrow.size[0]))
 rightarrow = rightarrow.resize((arrow_height, height))
 rightarrowrender = ImageTk.PhotoImage(rightarrow)
-right_arr = ttk.Button(stream, image=rightarrowrender)
 
-right_arr.image = rightarrowrender
-right_arr.grid(row=3, column=1)
+customise_names = [['Reset', vs.make_normal, 'Reset'], ['Make Grey', vs.make_grey, 'Grey'],
+                   ['Brightness up', vs.make_bright, 'Brightness'], ['Brightness down', vs.make_dark, 'Brightness'],
+                   ['Blur', vs.make_blur, 'Blur/Sharpen'], ['Sharpen', vs.make_sharpen, 'Blur/Sharpen'],
+                   ['Rotate clock', vs.make_clockwise_rotate, 'Rotate'],
+                   ['Rotate anticlock', vs.make_anticlockwise_rotate
+                       , 'Rotate'], ['Zoom in', vs.make_zoom_in, 'Zoom'],
+                   ['Zoom out', vs.make_zoom_out, 'Zoom'], [leftarrowrender, vs.make_pan_left, 'Pan'],
+                   [rightarrowrender, vs.make_pan_right, 'Pan'], [uparrowrender, vs.make_pan_up, 'Pan'],
+                   [downarrowrender, vs.make_pan_down, 'Pan']]
 
-# Sample picture (for where steam will go)
+windows_names = ['Reset', 'Grey', 'Brightness', 'Blur/Sharpen', 'Rotate', 'Zoom', 'Pan']
+windows = list(range(len(windows_names)))
+buttons = list(range(len(customise_names)))
 
-#400 for big, 300 for small
-if screen_size == 0:
-    stock_height = 300
-else:
-    stock_height = 400
+for i in range(len(buttons)):
+    buttons[i] = Customise_button(customise_names[i][2], customise_names[i][0], customise_names[i][1])
 
-stock = Frame(stream, bg=style.lookup('TFrame', 'background'))
-Sample_photo = Image.open("/home/pi/touchscreen/Touchscreen_photos/Crowley.jpg")  # needs to be whatever your directory is
-crowley_per = stock_height / float(Sample_photo.size[0])
-width = int((float(Sample_photo.size[1]) * float(crowley_per)))
-Sample_photo = Sample_photo.resize((stock_height, width))
-crowley = ImageTk.PhotoImage(Sample_photo)
-aziraphale = Label(stock, image=crowley, bg='#484848')
-aziraphale.image = crowley
-aziraphale.pack()
-stock.grid(column=0, row=1, columnspan=2, rowspan=2)
+for i in range(len(windows)):
+    windows[i] = Customise_window(windows_names[i])
+    for j in buttons:
+        windows[i].add_button(j)
 
+windows_dic = {'Reset': windows[0], 'Grey': windows[1], 'Brightness': windows[2], 'Blur/Sharpen': windows[3],
+               'Rotate': windows[4], 'Zoom': windows[5], 'Pan': windows[6]}
+
+current_window = windows_dic['Pan']
+current_window.create_window()
+
+
+# function to change the thing being customized
+
+def change_mode(new_window):
+    global current_window, windows_dic
+    current_window.close_window()
+    windows_dic[new_window].create_window()
+    current_window = windows_dic[new_window]
+
+
+# button for dropdown list where user can change video type
+
+customise = StringVar()
+customise.set('customise')
+
+video_customise = ttk.OptionMenu(stream, customise, *windows_names, command=change_mode)
+video_customise.grid(column=2, row=0)
+
+# displaying preview of stream
+
+# 400 for big, 300 for small
+stock_height = 250
+stock_width = int(1.3333333 * stock_height)
+
+stock = Label(stream, bg=style.lookup('TFrame', 'background'))
+stock.grid(column=0, row=0, columnspan=2, rowspan=3, sticky='nw')
+
+vs.show_frame(stock, stock_height, stock_width)
 # Tutorial section
 
 rick_roll = ttk.Label(tutorial, text="""Guide to using this touchscreen explaining what a stream key 
@@ -787,12 +559,5 @@ is,how the process works (i.e. that they need wifi, a video and audio device con
 explain what the delay between audio/video is and why it is necessary,
 along with other necessary things...""")
 rick_roll.pack(fill=BOTH)
-
-#stream_btn = ttk.Button(tutorial, text="Stream", command=back_tutorial)
-#stream_btn.pack()
-
-# Button to deal with return to main menu from tutorial screen
-#main_menur = ttk.Button(tutorial, text="Main menu", command=main_return)
-#main_menur.grid(column=1, row=1)
 
 app.mainloop()
