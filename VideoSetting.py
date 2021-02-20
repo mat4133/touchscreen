@@ -5,8 +5,11 @@ from PIL import Image, ImageTk
 import numpy as np
 import io
 
+cascPath = 'haarcascade_frontalface_default.xml'
+facecascade = cv2.CascadeClassifier(cascPath)
 
-cap = cv2.VideoCapture(0)
+input_width = 1280
+input_height = 720
 
 #file_name = 'saved_settings'
 #settings_values = open(file_name,'rb')
@@ -16,7 +19,7 @@ cap = cv2.VideoCapture(0)
 #default settings
 show_image = 1
 
-settings = {'rotation':0, 'zoom':0, 'pan_horizontal':0, 'pan_vertical':0, 'colour':'Normal'}
+settings = {'rotation': 0, 'top_offset': 0, 'bottom_offset': 0, 'left_offset': 0, 'right_offset': 0, 'colour':'Normal'}
 effect_list = []
 
 def function_maker(function, *part_args):  # takes in the function to make more of + values needed in that function
@@ -137,22 +140,56 @@ def make_sepia(*args):
     settings['colour'] = 'Sepia'
 
 def make_zoom_in():
-    settings['zoom'] += 10
+    #problem cross over zoom
+    settings['left_offset'] += 10
+    settings['right_offset'] += 10
+    settings['top_offset'] += 10
+    settings['bottom_offset'] += 10
 
 def make_zoom_out():
-    settings['zoom'] -= 10
+    if settings['left_offset'] <=0 and settings['right_offset'] <=0:
+        print('max_size')
+    elif settings['left_offset'] <= 0:
+        settings['right_offset'] -= 20
+        settings['right_offset'] = max(settings['right_offset'], 0)
+    elif settings['right_offset'] <=0:
+        settings['left_offset'] -= 20
+        settings['left_offset'] = max(settings['left_offset'], 0)
+    else:
+        settings['left_offset'] -= 10
+        settings['right_offset'] -= 10
+    if settings['top_offset'] <=0 and settings['bottom_offset'] <=0:
+        print('max size')
+    elif settings['top_offset'] <= 0:
+        settings['bottom_offset'] -= 20
+        settings['bottom_offset'] = max(settings['bottom_offset'], 0)
+    elif settings['bottom_offset'] <= 0:
+        settings['top_offset'] -= 20
+        settings['top_offset'] = max(settings['top_offset'], 0)
+    else:
+        settings['top_offset'] -= 10
+        settings['bottom_offset'] -= 10
 
 def make_pan_right():
-    settings['pan_horizontal'] += 10
+    if settings['right_offset']:
+        settings['right_offset'] -= 10
+        settings['left_offset'] += 10
 
 def make_pan_left():
-    settings['pan_horizontal'] -= 10
+    if settings['left_offset'] >= 10:
+        settings['right_offset'] += 10
+        settings['left_offset'] -= 10
+
 
 def make_pan_up():
-    settings['pan_vertical'] += 10
+    if settings['top_offset'] >= 10:
+        settings['top_offset'] -= 10
+        settings['bottom_offset'] += 10
 
 def make_pan_down():
-    settings['pan_vertical'] -= 10
+    if settings['bottom_offset'] >= 10:
+        settings['top_offset'] += 10
+        settings['bottom_offset'] -= 10
 
 def make_clockwise_rotate():
     settings['rotation'] += 1
@@ -164,6 +201,9 @@ def make_anticlockwise_rotate():
     if settings['rotation'] == -1:
         settings['rotation'] = 3
 
+def detect_face():
+    effect_list.append('Face detection')
+
 def make_show_image():
     global show_image
     if show_image == 0:
@@ -172,19 +212,26 @@ def make_show_image():
         show_image = 0
 
 
-def show_frame(video_frame, height, width):
+def show_frame(video_frame, height, width, cap):
     global show_image, settings, effect_list
     _, frame = cap.read()
     cv2image = cv2.flip(frame, 1)
-    zoom = settings['zoom']
-    pan_horizontal = settings['pan_horizontal']
-    pan_vertical = settings['pan_vertical']
+    #zoom = settings['zoom']
+    top_offset = settings['top_offset']
+    bottom_offset = settings['bottom_offset']
+    left_offset = settings['left_offset']
+    right_offset = settings['right_offset']
     rotation = settings['rotation']
     if show_image == 1:
         for effect in effect_list:
-            cv2image = effects(effect, cv2image)
-        if settings['zoom'] != 0:
-            cv2image = cv2image[int(zoom - pan_vertical):int((480-zoom) - pan_vertical), int(1.33333*(zoom + pan_horizontal)):int(640-(1.33333*(zoom - pan_horizontal)))]
+            if effect != 'Face detection':
+                cv2image = effects(effect, cv2image)
+        if settings['top_offset'] != 0 or settings['bottom_offset'] != 0 or settings['left_offset'] != 0 or settings['right_offset'] != 0:
+            bottom_position = int(input_height-bottom_offset)
+            top_position = int(top_offset)
+            left_position = int(1.77777777*(left_offset))
+            right_position = int(input_width-(1.777777*(right_offset)))
+            cv2image = cv2image[top_position:bottom_position, left_position:right_position]
         #if rotation != 0:
             #cv2image = cv2.rotate(cv2image, rotateCode=(rotation - 1))
         if ('Emboss' not in effect_list) and ('Edge Detection' not in effect_list):
@@ -192,7 +239,7 @@ def show_frame(video_frame, height, width):
         img = Image.fromarray(cv2image)
     elif show_image == 0:
         img = Image.open("/home/pi/Nothing_To_see.jpg")
-    '''
+    '''    
     if int(float(img.size[0]) / float(img.size[1])) < int(4 / 3):
         hsize = int((float(img.size[1]) / float(width / float(img.size[0]))))
         wsize = int(hsize * float(3 / 4))
@@ -200,13 +247,17 @@ def show_frame(video_frame, height, width):
         hsize = int((float(img.size[1]) * float(width / float(img.size[0]))))
         wsize = width
     '''
+    if 'Face detection' in effect_list:
+        detected_faces = facecascade.detectMultiScale(cv2image, scaleFactor=1.1,minNeighbors=5, minSize=(30,30))
+        for (x,y,w,h) in detected_faces:
+            cv2.rectangle(cv2image, (x,y),(x+w,y+h),(0,200,0),4)
     wsize = width
     hsize = height
     img = img.resize((int(wsize), int(hsize)), Image.ANTIALIAS)
     imgtk = ImageTk.PhotoImage(image=img)
     video_frame.imgtk = imgtk
     video_frame.configure(image=imgtk)
-    frame_show = function_maker(show_frame, video_frame, height, width)
+    frame_show = function_maker(show_frame, video_frame, height, width, cap)
     video_frame.after(5, frame_show)
 
 def effects(effect_input, frame):

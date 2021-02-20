@@ -6,7 +6,7 @@ from wifi import Cell
 
 class network():
     def __init__(self, SSID, password, encryption):
-        self.SSID = SSID
+        self.SSID = str(SSID)
         self.password = password
         self.priority = 0
         self.encryption = encryption

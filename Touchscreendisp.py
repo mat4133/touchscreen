@@ -16,6 +16,10 @@ starting = 0
 audio_connection = 0
 video_connection = 0
 
+cap = cv2.VideoCapture(0)
+cap.set(3,1280)
+cap.set(4,720)
+
 class Customise_button(ttk.Button):
     def __init__(self, parent, text, command):
         self.parent = parent
@@ -124,7 +128,6 @@ note.add(settings, text="SETTINGS")
 note.add(wifi_login, text="WIFI")
 note.add(tutorial, text="TUTORIAL")
 
-settings2 = ttk.Frame(app)
 
 # Settings display------------------------------------------------------------------------------------------------------
 
@@ -191,17 +194,17 @@ def connect():
     wf.save_conf(candidate_network)
     wf.dump()
 
-search_list = wf.scan()
-#search_list = ['list of networks', 'network 1', 'network 2']
+#search_list = wf.scan()
+search_list = ['list of networks', 'Glide0028763-5G', 'Glide0028763-2G']
 
-
+'''
 option_menu_list = []
 for networks in search_list:
     option_menu_list.append(networks.SSID)
-
+'''
 
 current_network = StringVar(value='network 3')
-search_networks = ttk.OptionMenu(wifi_login, current_network, *option_menu_list, command=password_filler)
+search_networks = ttk.OptionMenu(wifi_login, current_network, *search_list, command=password_filler)
 search_networks.grid(column=1, row=1)
 
 
@@ -304,9 +307,9 @@ current_codetext = code_list[0]
 
 # current stream key should be the last used stream key (if any)
 stream_label = ttk.Label(settings, text='Current stream key:')
-stream_label.grid(column=0, row=1)
+stream_label.grid(column=0, row=0)
 current_code = ttk.Label(settings, text=current_codetext)
-current_code.grid(column=1, row=1, columnspan=2)
+current_code.grid(column=1, row=0)
 
 
 # function to clear space for keyboard
@@ -328,29 +331,29 @@ def keyboard_space_settings(*args):
 
 def reset_page(current_frame):
     current_frame.grid_forget()
-    clear_label.grid(column=0, row=4)
-    clr_lbl_bck.grid(column=1, row=4, columnspan=2)
-    audio_chklbl.grid(column=0, row=5)
-    audio_chk.grid(column=1, row=5, columnspan=2)
-    clear_button.grid(column=1, row=4, columnspan=2)
-    delay_lbl.grid(column=0, row=6)
-    BckLbl.grid(column=1, row=6, columnspan=2)
-    delay.grid(column=1, row=6, columnspan=2)
-    frame_rate_label.grid(column=0, row=7)
-    bit_rate_label.grid(column=0, row=8)
-    frame_rate_scroller.grid(column=1, row=7, columnspan=2)
-    bit_rate_scroller.grid(column=1, row=8, columnspan=2)
+    clear_label.grid(column=0, row=3)
+    clr_lbl_bck.grid(column=1, row=3, columnspan=2)
+    audio_chklbl.grid(column=0, row=4)
+    audio_chk.grid(column=1, row=4, columnspan=2)
+    clear_button.grid(column=1, row=3, columnspan=2)
+    delay_lbl.grid(column=0, row=5)
+    BckLbl.grid(column=1, row=4, columnspan=2)
+    delay.grid(column=1, row=5, columnspan=2)
+    frame_rate_label.grid(column=0, row=6)
+    bit_rate_label.grid(column=0, row=7)
+    frame_rate_scroller.grid(column=1, row=6, columnspan=2)
+    bit_rate_scroller.grid(column=1, row=7, columnspan=2)
 
 
 # user to input stream key
 stream_inputlabel = ttk.Label(settings, text='Enter key:')
-stream_inputlabel.grid(column=0, row=2)
+stream_inputlabel.grid(column=0, row=1)
 stream_text = StringVar()
 stream_code = ttk.Entry(settings, textvariable=stream_text)
 stream_code.bind("<Button>", keyboard_space_settings)
-stream_code.grid(column=1, row=2)
+stream_code.grid(column=1, row=1)
 stream_enter = ttk.Button(settings, text='Use key', command=enter_code)
-stream_enter.grid(column=2, row=2)
+stream_enter.grid(column=2, row=1)
 
 keyboard_frame1 = Frame(settings)
 keyboard_frame1.configure(bg=style.lookup('TFrame', 'background'))
@@ -362,47 +365,47 @@ keyboard_frame1 = create_keyboard(keyboard_frame1, stream_code, stream_text, sty
 
 # User to choose stream key (should appear in order of last used)
 stream_p_label = ttk.Label(settings, text="Saved keys:")
-stream_p_label.grid(column=0, row=3)
+stream_p_label.grid(column=0, row=2)
 value = StringVar()
 value.set(current_codetext)  # Setting the key (should be last key used)
 existing_codes = ttk.OptionMenu(settings, value, *code_list)
-existing_codes.grid(column=1, row=3)
+existing_codes.grid(column=1, row=2)
 stream_p_enter = ttk.Button(settings, text="Use key", command=change_code)
-stream_p_enter.grid(column=2, row=3)
+stream_p_enter.grid(column=2, row=2)
 
 # Clearing list of stream codes
 clear_label = ttk.Label(settings, text='Clear keys:')
-clear_label.grid(column=0, row=4)
+clear_label.grid(column=0, row=3)
 clr_lbl_bck = ttk.Label(settings, text='')
-clr_lbl_bck.grid(column=1, row=4, columnspan=2)
+clr_lbl_bck.grid(column=1, row=3, columnspan=2)
 clear_button = ttk.Button(settings, text='Clear keys', command=clear_code)
-clear_button.grid(column=1, row=4, columnspan=2)
+clear_button.grid(column=1, row=3, columnspan=2)
 
 # Allow stream w_out audio?
 audio_chklbl = ttk.Label(settings, text='Audioless streaming:')
-audio_chklbl.grid(column=0, row=5)
+audio_chklbl.grid(column=0, row=4)
 audio_chk = ttk.Checkbutton(settings, var=chk_state)
-audio_chk.grid(column=1, row=5, columnspan=2)
+audio_chk.grid(column=1, row=4, columnspan=2)
 
 # Code for delay_option
 delay_lbl = ttk.Label(settings, text="Audio-video delay:")
-delay_lbl.grid(column=0, row=6)
+delay_lbl.grid(column=0, row=5)
 BckLbl = ttk.Label(settings, text='')
-BckLbl.grid(column=1, row=6, columnspan=2)
+BckLbl.grid(column=1, row=5, columnspan=2)
 
 # initial value
 delay = ttk.Spinbox(settings, from_=-5000, to=5000, increment=20, textvariable=delay_value)
-delay.grid(column=1, row=6, columnspan=2)
+delay.grid(column=1, row=5, columnspan=2)
 
 frame_rate_label = ttk.Label(settings, text='Frame Rate:')
 frame_rate_scroller = ttk.Spinbox(settings, from_=0, to=100, textvariable=frame_rate)
-frame_rate_scroller.grid(column=1, row=7, columnspan=2)
-frame_rate_label.grid(column=0, row=7)
+frame_rate_scroller.grid(column=1, row=6, columnspan=2)
+frame_rate_label.grid(column=0, row=6)
 
 bit_rate_label = ttk.Label(settings, text='Bit Rate: ')
 bit_rate_scroller = ttk.Spinbox(settings, from_=0, to=100, textvariable=bit_rate)
-bit_rate_label.grid(column=0, row=8)
-bit_rate_scroller.grid(column=1, row=8, columnspan=2)
+bit_rate_label.grid(column=0, row=7)
+bit_rate_scroller.grid(column=1, row=7, columnspan=2)
 
 
 # More settings ---------------------------------------------------------------------------------------------
@@ -413,8 +416,8 @@ def touchscreen_calibration():
     os.system("usr/bin/xinput_calibrator | tail -6 > /etc/X11/xorg.conf.d/99-calibration.conf")
 
 
-screen_calib = ttk.Button(settings2, text="Touchscreen Calibration", command=touchscreen_calibration)
-screen_calib.grid(column=0, row=0, columnspan=2)
+screen_calib = ttk.Button(settings, text="Calibrate screen", command=touchscreen_calibration)
+screen_calib.grid(column=2, row=0)
 
 # Stream display--------------------------------------------------------------------------------------------------------
 
@@ -507,9 +510,11 @@ customise_names = [['Reset', vs.make_normal, 'Reset'], ['Make Grey', vs.make_gre
                    ['Zoom out', vs.make_zoom_out, 'Zoom'], [leftarrowrender, vs.make_pan_left, 'Pan'],
                    [rightarrowrender, vs.make_pan_right, 'Pan'], [uparrowrender, vs.make_pan_up, 'Pan'],
                    [downarrowrender, vs.make_pan_down, 'Pan'], ['Emboss', vs.make_emboss, 'Emboss'],
-                   ['Outline', vs.make_edge_detection, 'Outline'], ['Sepia', vs.make_sepia, 'Sepia']]
+                   ['Outline', vs.make_edge_detection, 'Outline'], ['Sepia', vs.make_sepia, 'Sepia'],
+                   ['Face Detection', vs.detect_face, 'Face Detection']]
 
-windows_names = ['Reset', 'Grey', 'Brightness', 'Blur/Sharpen', 'Rotate', 'Zoom', 'Pan', 'Emboss', 'Outline', 'Sepia']
+windows_names = ['Reset', 'Grey', 'Brightness', 'Blur/Sharpen', 'Rotate', 'Zoom', 'Pan', 'Emboss', 'Outline', 'Sepia',
+                 'Face Detection']
 windows = list(range(len(windows_names)))
 buttons = list(range(len(customise_names)))
 
@@ -523,7 +528,7 @@ for i in range(len(windows)):
 
 windows_dic = {'Reset': windows[0], 'Grey': windows[1], 'Brightness': windows[2], 'Blur/Sharpen': windows[3],
                'Rotate': windows[4], 'Zoom': windows[5], 'Pan': windows[6], 'Emboss': windows[7], 'Outline': windows[8],
-               'Sepia': windows[9]}
+               'Sepia': windows[9], 'Face Detection': windows[10]}
 
 current_window = windows_dic['Pan']
 current_window.create_window()
@@ -553,18 +558,18 @@ video_customise.grid(column=2, row=0)
 
 # 400 for big, 300 for small
 stock_height = 250
-stock_width = int(1.3333333 * stock_height)
+stock_width = int(1.7777777777 * stock_height)
 
 stock = Label(stream, bg=style.lookup('TFrame', 'background'))
 stock.grid(column=0, row=0, columnspan=2, rowspan=3, sticky='nw')
 
-vs.show_frame(stock, stock_height, stock_width)
+vs.show_frame(stock, stock_height, stock_width, cap)
 # Tutorial section
 
 rick_roll = ttk.Label(tutorial, text="""Guide to using this touchscreen explaining what a stream key 
 is,how the process works (i.e. that they need wifi, a video and audio device connected and a valid stream key. Also will 
 explain what the delay between audio/video is and why it is necessary,
 along with other necessary things...""")
-rick_roll.pack(fill=BOTH)
+rick_roll.grid(column=0, row=1)
 
 app.mainloop()
