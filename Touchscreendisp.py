@@ -212,7 +212,7 @@ password_lbl = ttk.Label(wifi_login, text='PASSWORD:')
 password_lbl.grid(column=0, row=2)
 
 password_text = StringVar()
-password_entr = ttk.Entry(wifi_login, textvariable=password_text)
+password_entr = ttk.Entry(wifi_login, show="*", textvariable=password_text)
 password_entr.grid(column=1, row=2)
 password_entr.bind("<Button>", password_space_wifi)
 
