@@ -121,12 +121,13 @@ note = ttk.Notebook(app)
 note.pack()
 
 stream = ttk.Frame(note)
-settings = ttk.Frame(note)
+settings2 = ttk.Frame(note)
+settings2.pack(fill=BOTH, expand=True)
 wifi_login = ttk.Frame(note)
 tutorial = ttk.Frame(note)
 
 note.add(stream, text="STREAM")
-note.add(settings, text="SETTINGS")
+note.add(settings2, text="SETTINGS")
 note.add(wifi_login, text="WIFI")
 note.add(tutorial, text="TUTORIAL")
 
@@ -134,9 +135,9 @@ note.add(tutorial, text="TUTORIAL")
 # Settings display------------------------------------------------------------------------------------------------------
 
 # Configuring grid layout for settings window
-settings.grid_columnconfigure(0, weight=2)
-settings.grid_columnconfigure((1, 2), weight=1)
-settings.grid_rowconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8), weight=1)
+settings2.grid_columnconfigure(0, weight=2)
+settings2.grid_columnconfigure((1, 2), weight=1)
+settings2.grid_rowconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8), weight=1)
 
 
 # Wifi login and code ----------------------------------------------------------------------
@@ -229,6 +230,44 @@ keyboard_frame3.columnconfigure(0, weight=1)
 keyboard_frame3 = create_keyboard(keyboard_frame3, password_entr, password_text, style, password_keyboard_off)
 
 # Settings frame--------------------------------------------------------------------------------------
+
+#Adding scrollbar to frame-----------------------------------
+
+canvas = Canvas(settings2, borderwidth=0, highlightthickness=0, bd=0, bg = style.lookup('TFrame', 'background'))
+canvas.pack(side=LEFT, fill=BOTH, expand = True)
+
+scroll = ttk.Scrollbar(settings2, orient='vertical', command=canvas.yview)
+scroll.pack(side=RIGHT, fill=Y, expand='false')
+scroll.config(command=canvas.yview)
+
+canvas.config(yscrollcommand=scroll.set, scrollregion=(0,0,0,600))
+canvas.pack(fill=BOTH, side=LEFT, expand=TRUE)
+
+# reset the view
+canvas.xview_moveto(0)
+canvas.yview_moveto(0)
+
+#create frame inside canvas
+settings = ttk.Frame(canvas)
+settings.pack()
+settings_id = canvas.create_window(50,0, window = settings, anchor=NW)
+#settings.config(width=466)
+
+def _configure_interior(event):
+    # update the scrollbars to match the size of the inner frame
+    size = (settings.winfo_reqwidth(), settings.winfo_reqheight())
+    canvas.config(scrollregion="0 0 %s %s" % size)
+    if settings.winfo_reqwidth() != canvas.winfo_width():
+        # update the canvas's width to fit the inner frame
+        canvas.config(width=settings.winfo_reqwidth())
+settings.bind('<Configure>', _configure_interior)
+
+def _configure_canvas(event):
+    settings.configure(width=canvas.winfo_width())
+    if settings.winfo_reqwidth() != canvas.winfo_width():
+        # update the inner frame's width to fill the canvas
+        canvas.itemconfigure(settings_id, width=canvas.winfo_width())
+canvas.bind('<Configure>', _configure_canvas)
 
 # importing default settings -------------------------------------------------------------------------
 
