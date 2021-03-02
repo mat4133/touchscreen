@@ -146,6 +146,7 @@ def password_space_wifi(*args):
     connect_btn.grid_forget()
     wifi_label.grid_forget()
     wifi_connected.grid_forget()
+    toggle_btn.grid(row=3, column=1)
     keyboard_frame3.grid(column=0, row=4, columnspan=2, rowspan=2)
     keyboard_on(keyboard_frame3.children['!frame'])
 
@@ -158,8 +159,9 @@ def password_keyboard_off(current_frame):
     search_networks.grid(column=1, row=1)
     password_entr.grid(column=1, row=2)
     password_lbl.grid(column=0, row=2)
-    connect_btn.grid(column=1, row=3)
+    connect_btn.grid(columnspan=2, row=3)
     keyboard_frame3.grid_forget()
+    toggle_btn.grid_forget()
     # username_entr.grid(column=1, row=2)
     # username_lbl.grid(column=0, row=2)
 
@@ -213,10 +215,20 @@ search_networks.grid(column=1, row=1)
 password_lbl = ttk.Label(wifi_login, text='PASSWORD:')
 password_lbl.grid(column=0, row=2)
 
+def toggle_password():
+    if password_entr.cget('show') == '':
+        password_entr.config(show='*')
+        toggle_btn.config(text='Show Password')
+    else:
+        password_entr.config(show='')
+        toggle_btn.config(text='Hide Password')
+
 password_text = StringVar()
-password_entr = ttk.Entry(wifi_login, textvariable=password_text)
+password_entr = ttk.Entry(wifi_login, show='*', textvariable=password_text)
 password_entr.grid(column=1, row=2)
 password_entr.bind("<Button>", password_space_wifi)
+
+toggle_btn = ttk.Button(wifi_login, text='Show Password', command=toggle_password)
 
 connect_btn = ttk.Button(wifi_login, text='CONNECT/SAVE', command=connect)
 connect_btn.grid(columnspan=2, row=3)
