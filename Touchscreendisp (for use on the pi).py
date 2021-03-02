@@ -9,6 +9,7 @@ import pickle
 import os
 import threading
 import cv2
+import StreamSetting
 
 # See README for information about this
 
@@ -17,8 +18,8 @@ audio_connection = 0
 video_connection = 0
 
 cap = cv2.VideoCapture(0)
-cap.set(3,1280)
-cap.set(4,720)
+cap.set(3,480)
+cap.set(4,640)
 
 class Customise_button(ttk.Button):
     def __init__(self, parent, text, command):
@@ -97,10 +98,8 @@ app = Tk()
 
 app.title('Streaming on a prayer')
 
-app.geometry('480x320')
-
-# swap to fullscreen when using touchscreen
-# app.attributes('-fullscreen', True)
+app.geometry('480x320')  # swap to fullscreen when using touchscreen
+#app.attributes('-fullscreen', True)
 
 # initializing style
 style = ThemedStyle(app)
@@ -196,18 +195,19 @@ def connect():
     wf.save_conf(candidate_network)
     wf.dump()
 
-#search_list = wf.scan()
-search_list = ['list of networks', 'Glide0028763-5G', 'Glide0028763-2G']
+search_list = wf.scan()
+#search_list = ['list of networks', 'Glide0028763-5G', 'Glide0028763-2G']
 
-'''
+
 option_menu_list = []
 for networks in search_list:
     option_menu_list.append(networks.SSID)
-'''
+
 
 current_network = StringVar(value='network 3')
 search_networks = ttk.OptionMenu(wifi_login, current_network, *search_list, command=password_filler)
 search_networks.grid(column=1, row=1)
+
 
 password_lbl = ttk.Label(wifi_login, text='PASSWORD:')
 password_lbl.grid(column=0, row=2)
@@ -413,8 +413,9 @@ bit_rate_scroller.grid(column=1, row=7, columnspan=2)
 
 
 # Touchscreen calibration
+calibration = function_maker(os.system, "/bin/sh -c xinput_calibrator; cat | tail -6 > /etc/X11/xorg.conf.d/99-calibration.conf")
 def touchscreen_calibration():
-    os.system("usr/bin/xinput_calibrator | tail -6 > /etc/X11/xorg.conf.d/99-calibration.conf")
+    threading.Thread(target = calibration).start()
 
 
 screen_calib = ttk.Button(settings, text="Calibrate screen", command=touchscreen_calibration)
@@ -461,9 +462,23 @@ def stop_stream():
     go_btn.configure(text='Go', bg='green', command=start_stream)
 
 
+def start_camera_stream():
+    vs.stop_stream()
+    cap.release()
+    threading.Thread(target = StreamSetting.STREAM_CAMERA_COMMAND).start()
+
+def start_screen_stream():
+    threading.Thread(target = StreamSetting.STREAM_SCREEN_COMMAND).start()
+
 # Go button
-go_btn = ttk.Button(stream, text='Go', command=start_stream)
-go_btn.grid(column=2, row=3)
+StreamButtons = Frame(stream)
+stream_btn = ttk.Button(StreamButtons, text='HQ Stream', command=start_camera_stream)
+stream_btn.grid(column=0, row=0)
+stream_btn = ttk.Button(StreamButtons, text='LQ Stream', command=start_screen_stream)
+stream_btn.grid(column=0, row=1)
+stream_btn = ttk.Button(StreamButtons, text='Stop', command=StreamSetting.STOP)
+stream_btn.grid(column=0, row=2)
+StreamButtons.grid(column=2, row=3)
 
 
 # Button to select between video options
@@ -472,7 +487,7 @@ arrow_width = 40
 arrow_height = 40
 
 uparrow = Image.open(
-    "\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\UpArrow.png")  # needs to be
+    "/home/pi/touchscreen-main/Touchscreen_photos/UpArrow.png")  # needs to be
 # whatever your directory is
 up_per = (arrow_width / float(uparrow.size[0]))
 height = int((float(uparrow.size[1]) * float(up_per)))
@@ -480,7 +495,7 @@ uparrow = uparrow.resize((arrow_width, height))
 uparrowrender = ImageTk.PhotoImage(uparrow)
 
 downarrow = Image.open(
-    "\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\DownArrow.png")  # needs to be
+    "/home/pi/touchscreen-main/Touchscreen_photos/DownArrow.png")  # needs to be
 # whatever your directory is
 down_per = (arrow_width / float(downarrow.size[0]))
 height = int((float(downarrow.size[1]) * float(down_per)))
@@ -488,7 +503,7 @@ downarrow = downarrow.resize((arrow_width, height))
 downarrowrender = ImageTk.PhotoImage(downarrow)
 
 leftarrow = Image.open(
-    "\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\LeftArrow.png")  # needs to be
+    "/home/pi/touchscreen-main/Touchscreen_photos/LeftArrow.png")  # needs to be
 # whatever your directory is
 left_per = (arrow_height / float(leftarrow.size[0]))
 height = int((float(leftarrow.size[1]) * float(left_per)))
@@ -496,7 +511,7 @@ leftarrow = leftarrow.resize((arrow_height, height))
 leftarrowrender = ImageTk.PhotoImage(leftarrow)
 
 rightarrow = Image.open(
-    "\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\RightArrow.png")  # needs to be
+    "/home/pi/touchscreen-main/Touchscreen_photos/RightArrow.png")  # needs to be
 # whatever your directory is
 right_per = (arrow_height / float(rightarrow.size[0]))
 rightarrow = rightarrow.resize((arrow_height, height))
@@ -512,10 +527,10 @@ customise_names = [['Reset', vs.make_normal, 'Reset'], ['Make Grey', vs.make_gre
                    [rightarrowrender, vs.make_pan_right, 'Pan'], [uparrowrender, vs.make_pan_up, 'Pan'],
                    [downarrowrender, vs.make_pan_down, 'Pan'], ['Emboss', vs.make_emboss, 'Emboss'],
                    ['Outline', vs.make_edge_detection, 'Outline'], ['Sepia', vs.make_sepia, 'Sepia'],
-                   ['Face Detection', vs.detect_face, 'Face Detection'], ['Motion Tracker', vs.motion_tracker, 'Motion Tracker']]
+                   ['Face Detection', vs.detect_face, 'Face Detection']]
 
 windows_names = ['Reset', 'Grey', 'Brightness', 'Blur/Sharpen', 'Rotate', 'Zoom', 'Pan', 'Emboss', 'Outline', 'Sepia',
-                 'Face Detection', 'Motion Tracker']
+                 'Face Detection']
 windows = list(range(len(windows_names)))
 buttons = list(range(len(customise_names)))
 
@@ -529,7 +544,7 @@ for i in range(len(windows)):
 
 windows_dic = {'Reset': windows[0], 'Grey': windows[1], 'Brightness': windows[2], 'Blur/Sharpen': windows[3],
                'Rotate': windows[4], 'Zoom': windows[5], 'Pan': windows[6], 'Emboss': windows[7], 'Outline': windows[8],
-               'Sepia': windows[9], 'Face Detection': windows[10], 'Motion Tracker': windows[11]}
+               'Sepia': windows[9], 'Face Detection': windows[10]}
 
 current_window = windows_dic['Pan']
 current_window.create_window()
@@ -559,7 +574,7 @@ video_customise.grid(column=2, row=0)
 
 # 400 for big, 300 for small
 stock_height = 250
-stock_width = int(1.7777777777 * stock_height)
+stock_width = int(1.33333 * stock_height)
 
 stock = Label(stream, bg=style.lookup('TFrame', 'background'))
 stock.grid(column=0, row=0, columnspan=2, rowspan=3, sticky='nw')

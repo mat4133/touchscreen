@@ -10,17 +10,91 @@ facecascade = cv2.CascadeClassifier(cascPath)
 
 input_width = 1280
 input_height = 720
+input_ratio = input_width/input_height
 
 #file_name = 'saved_settings'
 #settings_values = open(file_name,'rb')
 #settings = pickle.load(settings_values)
 
-
 #default settings
 show_image = 1
 
 settings = {'rotation': 0, 'top_offset': 0, 'bottom_offset': 0, 'left_offset': 0, 'right_offset': 0, 'colour':'Normal'}
+last_change = np.array([0, input_height, 0, input_width]) #format is top bottom left right
 effect_list = []
+face_effects = []
+
+def reduce_zoom(positions):
+    print('OG positions', positions)
+    acceptable_vzoom = 20
+    acceptable_hzoom = acceptable_vzoom*input_ratio
+    positions = np.array(positions)
+    proposed_change = []
+    for i in range(len(positions)):
+        proposed_change.append(positions[i]-last_change[i])
+    print(proposed_change)
+    top_ratio = abs(proposed_change[0])/(abs(proposed_change[0])+abs(proposed_change[1]))
+    bottom_ratio = 1 - top_ratio
+    left_ratio = abs(proposed_change[2])/abs((proposed_change[2])+abs(proposed_change[3]))
+    right_ratio = 1 - left_ratio
+    ratio_list = [top_ratio, bottom_ratio, left_ratio, right_ratio]
+    print(ratio_list)
+    for i in range(len(positions)):
+        if i >= 2:
+            multiplier = input_ratio
+        else:
+            multiplier = 1
+        if abs(positions[i] - last_change[i]) <= 10:
+            positions[i] = last_change[i]
+        elif positions[i] - last_change[i] > 10:
+            positions[i] = int(last_change[i] + 9 * multiplier*ratio_list[i])
+            last_change[i] = positions[i]
+        elif positions[i] - last_change[i] < -10:
+            positions[i] = int(last_change[i] - 9 * multiplier*ratio_list[i])
+            last_change[i] = positions[i]
+    print('New positions', list(positions))
+    return list(positions)
+
+
+def face_focus(faces):
+    image_height = faces[0][3]
+    extended_height = image_height * 1.5
+    top_position = int(faces[0][1] + image_height * 0.5 - extended_height / 2)
+    bottom_position = int(faces[0][1] + 0.5 * image_height + extended_height / 2)
+    right_position = int(faces[0][0] + 0.5 * (image_height + extended_height * input_ratio))
+    left_position = int(faces[0][0] + 0.5 * (image_height - extended_height * input_ratio))
+    return [top_position,bottom_position, left_position, right_position]
+
+def face_stuff(cv2image, face_effects):
+    if len(face_effects) > 0:
+        grey = cv2.cvtColor(cv2image, cv2.COLOR_BGR2GRAY)
+        detected_faces = facecascade.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+        if 'Face detection' in face_effects:
+            for (x, y, w, h) in detected_faces:
+                cv2.rectangle(cv2image, (x, y), (x + w, y + h), (0, 200, 0), 4)
+        if 'Motion Tracker' in face_effects:
+            if len(detected_faces) == 1:
+                positions = face_focus(detected_faces)
+                positions = reduce_zoom(positions)
+                cv2image = cv2image[positions[0]:positions[1], positions[2]:positions[3]]
+            else:
+                top_offset = settings['top_offset']
+                bottom_offset = settings['bottom_offset']
+                left_offset = settings['left_offset']
+                right_offset = settings['right_offset']
+                bottom_position = int(input_height - bottom_offset)
+                top_position = int(top_offset)
+                left_position = int(input_ratio * (left_offset))
+                right_position = int(input_width - (input_ratio * (right_offset)))
+                positions = [top_position, bottom_position, left_position, right_position]
+                positions = reduce_zoom(positions)
+                cv2image = cv2image[positions[0]:positions[1], positions[2]:positions[3]]
+        if 'Autofocus' in face_effects:
+            if len(detected_faces) == 1:
+                positions = face_focus(detected_faces)
+        return cv2image
+    else:
+        return cv2image
 
 def function_maker(function, *part_args):  # takes in the function to make more of + values needed in that function
     def wraps(*extra_args):
@@ -28,7 +102,6 @@ def function_maker(function, *part_args):  # takes in the function to make more 
         argument.extend(extra_args)
         return function(*argument)
     return wraps
-    
 
 #brightness 0 - 99
 #saturation -99 --> 99
@@ -96,6 +169,7 @@ def motion(motion_slider):
 def make_normal(*args):
     global settings, effect_list
     effect_list = []
+    face_effects = []
     settings['colour'] = 'Normal'
 
 def make_grey(*args):
@@ -202,7 +276,13 @@ def make_anticlockwise_rotate():
         settings['rotation'] = 3
 
 def detect_face():
-    effect_list.append('Face detection')
+    face_effects.append('Face detection')
+
+def motion_tracker():
+    face_effects.append('Motion Tracker')
+
+def auto_focus():
+    face_effects.append('Autofocus')
 
 def make_show_image():
     global show_image
@@ -213,7 +293,7 @@ def make_show_image():
 
 
 def show_frame(video_frame, height, width, cap):
-    global show_image, settings, effect_list
+    global show_image, settings, effect_list, last_change
     _, frame = cap.read()
     cv2image = cv2.flip(frame, 1)
     #zoom = settings['zoom']
@@ -224,33 +304,25 @@ def show_frame(video_frame, height, width, cap):
     rotation = settings['rotation']
     if show_image == 1:
         for effect in effect_list:
-            if effect != 'Face detection':
+            if effect != 'Face detection' and effect != 'Motion Tracker':
                 cv2image = effects(effect, cv2image)
-        if settings['top_offset'] != 0 or settings['bottom_offset'] != 0 or settings['left_offset'] != 0 or settings['right_offset'] != 0:
+        #if settings['top_offset'] != 0 or settings['bottom_offset'] != 0 or settings['left_offset'] != 0 or settings['right_offset'] != 0:
+        if 'Motion Tracker' not in face_effects:
             bottom_position = int(input_height-bottom_offset)
             top_position = int(top_offset)
-            left_position = int(1.77777777*(left_offset))
-            right_position = int(input_width-(1.777777*(right_offset)))
-            cv2image = cv2image[top_position:bottom_position, left_position:right_position]
+            left_position = int(input_ratio*(left_offset))
+            right_position = int(input_width-(input_ratio*(right_offset)))
+            positions = [top_position, bottom_position, left_position, right_position]
+            cv2image = cv2image[positions[0]:positions[1], positions[2]:positions[3]]
+            last_change = [positions[0], positions[1], positions[2], positions[3]]
         #if rotation != 0:
             #cv2image = cv2.rotate(cv2image, rotateCode=(rotation - 1))
         if ('Emboss' not in effect_list) and ('Edge Detection' not in effect_list):
             cv2image = effects(settings['colour'], cv2image)
-        img = Image.fromarray(cv2image)
     elif show_image == 0:
         img = Image.open("/home/pi/Nothing_To_see.jpg")
-    '''    
-    if int(float(img.size[0]) / float(img.size[1])) < int(4 / 3):
-        hsize = int((float(img.size[1]) / float(width / float(img.size[0]))))
-        wsize = int(hsize * float(3 / 4))
-    else:
-        hsize = int((float(img.size[1]) * float(width / float(img.size[0]))))
-        wsize = width
-    '''
-    if 'Face detection' in effect_list:
-        detected_faces = facecascade.detectMultiScale(cv2image, scaleFactor=1.1,minNeighbors=5, minSize=(30,30))
-        for (x,y,w,h) in detected_faces:
-            cv2.rectangle(cv2image, (x,y),(x+w,y+h),(0,200,0),4)
+    cv2image = face_stuff(cv2image, face_effects)
+    img = Image.fromarray(cv2image)
     wsize = width
     hsize = height
     img = img.resize((int(wsize), int(hsize)), Image.ANTIALIAS)
@@ -258,7 +330,7 @@ def show_frame(video_frame, height, width, cap):
     video_frame.imgtk = imgtk
     video_frame.configure(image=imgtk)
     frame_show = function_maker(show_frame, video_frame, height, width, cap)
-    video_frame.after(5, frame_show)
+    video_frame.after(2, frame_show)
 
 def effects(effect_input, frame):
     effect = {'Normal': cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA),
