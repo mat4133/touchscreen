@@ -17,8 +17,8 @@ audio_connection = 0
 video_connection = 0
 
 cap = cv2.VideoCapture(0)
-cap.set(3,1280)
-cap.set(4,720)
+cap.set(3,480)
+cap.set(4,640)
 
 class Customise_button(ttk.Button):
     def __init__(self, parent, text, command):
@@ -45,22 +45,22 @@ class Customise_window():
 
     def create_window(self):
         if len(self.button_list) == 1:
-            self.button_list[0].grid(column=0, row=3, columnspan=2)
+            self.button_list[0].grid(column=0, row=3, columnspan=3)
         if len(self.button_list) == 2:
-            self.button_list[0].grid(column=0, row=3, columnspan=2)
+            self.button_list[0].grid(column=0, row=3, columnspan=3)
             self.button_list[1].grid(column=2, row=1, rowspan=2)
         if len(self.button_list) == 4:
-            self.button_list[0].grid(column=0, row=3)
-            self.button_list[1].grid(column=1, row=3)
-            self.button_list[2].grid(column=2, row=1)
-            self.button_list[3].grid(column=2, row=2)
+            self.button_list[0].grid(column=0, row=3, columnspan=2)
+            self.button_list[1].grid(column=2, row=3, columnspan=2)
+            self.button_list[2].grid(column=4, row=1)
+            self.button_list[3].grid(column=4, row=2)
         if len(self.button_list) == 6:
             self.button_list[0].grid(column=2, row=3)
             self.button_list[1].grid(column=2, row=4)
             self.button_list[2].grid(column=0, row=3, rowspan=2)
             self.button_list[3].grid(column=1, row=3, rowspan=2)
-            self.button_list[4].grid(column=2, row=1)
-            self.button_list[5].grid(column=2, row=2)
+            self.button_list[4].grid(column=4, row=1)
+            self.button_list[5].grid(column=4, row=2)
 
     def close_window(self):
         for i in self.button_list:
@@ -206,14 +206,12 @@ def connect():
     wf.save_conf(candidate_network)
     wf.dump()
 
-#search_list = wf.scan()
-search_list = ['list of networks', 'Glide0028763-5G', 'Glide0028763-2G']
+search_list = wf.scan()
+#search_list = ['list of networks', 'Glide0028763-5G', 'Glide0028763-2G']
 
-'''
 option_menu_list = []
 for networks in search_list:
     option_menu_list.append(networks.SSID)
-'''
 
 current_network = StringVar(value='network 3')
 search_networks = ttk.OptionMenu(wifi_login, current_network, *search_list, command=password_filler)
@@ -267,10 +265,12 @@ canvas.xview_moveto(0)
 canvas.yview_moveto(0)
 
 #create frame inside canvas
+
 settings = ttk.Frame(canvas)
 settings.pack()
 settings_id = canvas.create_window(50,0, window = settings, anchor=NW)
 #settings.config(width=466)
+
 
 def _configure_interior(event):
     # update the scrollbars to match the size of the inner frame
@@ -484,7 +484,7 @@ screen_calib.grid(column=2, row=0)
 
 stream.grid_rowconfigure((0, 3), weight=2)
 stream.grid_rowconfigure((1, 2), weight=3)
-stream.grid_columnconfigure((0, 1), weight=1)
+stream.grid_columnconfigure((0, 1, 2, 3, 4), weight=1)
 stream.grid_rowconfigure(1, weight=4)
 
 
@@ -523,7 +523,7 @@ def stop_stream():
 
 # Go button
 go_btn = ttk.Button(stream, text='Go', command=start_stream)
-go_btn.grid(column=2, row=3)
+go_btn.grid(column=4, row=3)
 
 
 # Button to select between video options
@@ -613,7 +613,7 @@ labelscus = ['Customise']
 labelscus.extend(windows_names)
 
 video_customise = ttk.OptionMenu(stream, customise, *labelscus, command=change_mode)
-video_customise.grid(column=2, row=0)
+video_customise.grid(column=4, row=0)
 
 # displaying preview of stream
 
@@ -622,7 +622,7 @@ stock_height = 250
 stock_width = int(1.7777777777 * stock_height)
 
 stock = Label(stream, bg=style.lookup('TFrame', 'background'))
-stock.grid(column=0, row=0, columnspan=2, rowspan=3, sticky='nw')
+stock.grid(column=0, row=0, columnspan=3, rowspan=3, sticky='nw')
 
 vs.show_frame(stock, stock_height, stock_width, cap)
 # Tutorial section
