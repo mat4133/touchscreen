@@ -54,6 +54,13 @@ class Customise_window():
             self.button_list[1].grid(column=1, row=3)
             self.button_list[2].grid(column=2, row=1)
             self.button_list[3].grid(column=2, row=2)
+        if len(self.button_list) == 6:
+            self.button_list[0].grid(column=2, row=3)
+            self.button_list[1].grid(column=2, row=4)
+            self.button_list[2].grid(column=0, row=3, rowspan=2)
+            self.button_list[3].grid(column=1, row=3, rowspan=2)
+            self.button_list[4].grid(column=2, row=1)
+            self.button_list[5].grid(column=2, row=2)
 
     def close_window(self):
         for i in self.button_list:
@@ -121,6 +128,7 @@ note = ttk.Notebook(app)
 note.pack()
 
 stream = ttk.Frame(note)
+settings = ttk.Frame(note)
 settings2 = ttk.Frame(note)
 settings2.pack(fill=BOTH, expand=True)
 wifi_login = ttk.Frame(note)
@@ -161,7 +169,6 @@ def password_keyboard_off(current_frame):
     password_lbl.grid(column=0, row=2)
     connect_btn.grid(columnspan=2, row=3)
     keyboard_frame3.grid_forget()
-    toggle_btn.grid_forget()
     # username_entr.grid(column=1, row=2)
     # username_lbl.grid(column=0, row=2)
 
@@ -228,7 +235,7 @@ password_entr = ttk.Entry(wifi_login, show='*', textvariable=password_text)
 password_entr.grid(column=1, row=2)
 password_entr.bind("<Button>", password_space_wifi)
 
-toggle_btn = ttk.Button(wifi_login, text='Show Password', command=toggle_password)
+toggle_btn = ttk.Button(wifi_login, text='Show password', command=toggle_password)
 
 connect_btn = ttk.Button(wifi_login, text='CONNECT/SAVE', command=connect)
 connect_btn.grid(columnspan=2, row=3)
@@ -280,6 +287,8 @@ def _configure_canvas(event):
         # update the inner frame's width to fill the canvas
         canvas.itemconfigure(settings_id, width=canvas.winfo_width())
 canvas.bind('<Configure>', _configure_canvas)
+
+
 
 # importing default settings -------------------------------------------------------------------------
 
@@ -553,20 +562,21 @@ right_per = (arrow_height / float(rightarrow.size[0]))
 rightarrow = rightarrow.resize((arrow_height, height))
 rightarrowrender = ImageTk.PhotoImage(rightarrow)
 
-customise_names = [['Reset', vs.make_normal, 'Reset'], ['Make Grey', vs.make_grey, 'Grey'],
-                   ['Brightness up', vs.make_bright, 'Brightness'], ['Brightness down', vs.make_dark, 'Brightness'],
-                   ['Blur', vs.make_blur, 'Blur/Sharpen'], ['Sharpen', vs.make_sharpen, 'Blur/Sharpen'],
+
+
+customise_names = [['Reset', vs.make_normal, 'Reset'], ['Make Grey', vs.make_grey, 'Colour'],
+                   ['Brightness up', vs.make_bright, 'Properties'], ['Brightness down', vs.make_dark, 'Properties'],
+                   ['Blur', vs.make_blur, 'Properties'], ['Sharpen', vs.make_sharpen, 'Properties'],
                    ['Rotate clock', vs.make_clockwise_rotate, 'Rotate'],
                    ['Rotate anticlock', vs.make_anticlockwise_rotate
-                       , 'Rotate'], ['Zoom in', vs.make_zoom_in, 'Zoom'],
-                   ['Zoom out', vs.make_zoom_out, 'Zoom'], [leftarrowrender, vs.make_pan_left, 'Pan'],
-                   [rightarrowrender, vs.make_pan_right, 'Pan'], [uparrowrender, vs.make_pan_up, 'Pan'],
-                   [downarrowrender, vs.make_pan_down, 'Pan'], ['Emboss', vs.make_emboss, 'Emboss'],
-                   ['Outline', vs.make_edge_detection, 'Outline'], ['Sepia', vs.make_sepia, 'Sepia'],
-                   ['Face Detection', vs.detect_face, 'Face Detection'], ['Motion Tracker', vs.motion_tracker, 'Motion Tracker']]
+                       , 'Rotate'], ['Zoom in', vs.make_zoom_in, 'Zoom/Pan'],
+                   ['Zoom out', vs.make_zoom_out, 'Zoom/Pan'], [leftarrowrender, vs.make_pan_left, 'Zoom/Pan'],
+                   [rightarrowrender, vs.make_pan_right, 'Zoom/Pan'], [uparrowrender, vs.make_pan_up, 'Zoom/Pan'],
+                   [downarrowrender, vs.make_pan_down, 'Zoom/Pan'], ['Emboss', vs.make_emboss, 'Effects'],
+                   ['Outline', vs.make_edge_detection, 'Effects'], ['Sepia', vs.make_sepia, 'Colour'],
+                   ['Face Detection', vs.detect_face, 'Effects'], ['Motion Tracker', vs.motion_tracker, 'Effects']]
 
-windows_names = ['Reset', 'Grey', 'Brightness', 'Blur/Sharpen', 'Rotate', 'Zoom', 'Pan', 'Emboss', 'Outline', 'Sepia',
-                 'Face Detection', 'Motion Tracker']
+windows_names = ['Reset', 'Colour', 'Properties', 'Rotate', 'Zoom/Pan', 'Effects']
 windows = list(range(len(windows_names)))
 buttons = list(range(len(customise_names)))
 
@@ -578,11 +588,10 @@ for i in range(len(windows)):
     for j in buttons:
         windows[i].add_button(j)
 
-windows_dic = {'Reset': windows[0], 'Grey': windows[1], 'Brightness': windows[2], 'Blur/Sharpen': windows[3],
-               'Rotate': windows[4], 'Zoom': windows[5], 'Pan': windows[6], 'Emboss': windows[7], 'Outline': windows[8],
-               'Sepia': windows[9], 'Face Detection': windows[10], 'Motion Tracker': windows[11]}
+windows_dic = {'Reset': windows[0], 'Colour': windows[1], 'Properties': windows[2], 'Rotate': windows[3],
+               'Zoom/Pan': windows[4], 'Effects': windows[5]}
 
-current_window = windows_dic['Pan']
+current_window = windows_dic['Zoom/Pan']
 current_window.create_window()
 
 
