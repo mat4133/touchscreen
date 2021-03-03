@@ -8,8 +8,8 @@ import io
 cascPath = 'haarcascade_frontalface_default.xml'
 facecascade = cv2.CascadeClassifier(cascPath)
 
-input_width = 1280
-input_height = 720
+input_width = 640
+input_height = 480
 input_ratio = input_width/input_height
 
 #file_name = 'saved_settings'
@@ -18,11 +18,10 @@ input_ratio = input_width/input_height
 
 #default settings
 show_image = 1
+brightness = 0
 
-settings = {'rotation': 0, 'top_offset': 0, 'bottom_offset': 0, 'left_offset': 0, 'right_offset': 0, 'colour':'Normal'}
+settings = {'rotation': 0, 'top_offset': 0, 'bottom_offset': 0, 'left_offset': 0, 'right_offset': 0}
 last_change = np.array([0, input_height, 0, input_width]) #format is top bottom left right
-effect_list = []
-face_effects = []
 
 def reduce_zoom(positions):
     print('OG positions', positions)
@@ -65,14 +64,15 @@ def face_focus(faces):
     left_position = int(faces[0][0] + 0.5 * (image_height - extended_height * input_ratio))
     return [top_position,bottom_position, left_position, right_position]
 
-def face_stuff(cv2image, face_effects):
-    if len(face_effects) > 0:
+def face_stuff(cv2image):
+    global show_image
+    if show_image >= 10:
         grey = cv2.cvtColor(cv2image, cv2.COLOR_BGR2GRAY)
         detected_faces = facecascade.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
-        if 'Face detection' in face_effects:
+        if show_image == 11:
             for (x, y, w, h) in detected_faces:
                 cv2.rectangle(cv2image, (x, y), (x + w, y + h), (0, 200, 0), 4)
-        if 'Motion Tracker' in face_effects:
+        if show_image == 12:
             if len(detected_faces) == 1:
                 positions = face_focus(detected_faces)
                 positions = reduce_zoom(positions)
@@ -89,7 +89,7 @@ def face_stuff(cv2image, face_effects):
                 positions = [top_position, bottom_position, left_position, right_position]
                 positions = reduce_zoom(positions)
                 cv2image = cv2image[positions[0]:positions[1], positions[2]:positions[3]]
-        if 'Autofocus' in face_effects:
+        if show_image == 13:
             if len(detected_faces) == 1:
                 positions = face_focus(detected_faces)
         return cv2image
@@ -103,115 +103,46 @@ def function_maker(function, *part_args):  # takes in the function to make more 
         return function(*argument)
     return wraps
 
-#brightness 0 - 99
-#saturation -99 --> 99
-#sharpness -99 --> 99
-#contrast -99 --> 99
-
-#to increase the slider
-
-#to decrease the slider
-
-
-#to rotate
-
-
-#Modes are as follows:
-'''
-def awb(sliders_list, mode):
-    print(mode)
-    video.AWB_MODES[mode]
-    display(*sliders_list)
-
-#Effects are as follows
-
-def motion(motion_slider):
-    step = 1
-    Num_images = 1
-    Capture_count = 0
-    thresh_percent = motion_slider.get() / 100
-    threshold = 30
-    resolution_height = 1080
-    resolution_width = 1440
-    min_pixel_change = resolution_height * resolution_width * thresh_percent
-    stream = io.BytesIO()
-
-    time.sleep(1)
-    try:
-        while threshold > 0:
-            video.resolution = (1440,1080)
-            if step == 1:
-                stream.seek(0)
-                video.capture(stream,'rgba',True)
-                frame1 = np.fromstring(stream.getvalue(), dtype=np.uint8)
-                step = 2
-            if step == 2:
-                stream.seek(0)
-                video.capture(stream,'rgba', True)
-                frame2 = np.fromstring(stream.getvalue(), dtype=np.uint8)
-                step = 1
-            Num_images = Num_images + 1
-
-            if Num_images > 4:
-                if Capture_count <= 0:
-                    frame_diff = np.abs(frame1-frame2)
-
-    except:
-        print('stuff went wrong')
-        GPI0.cleanup()
-        exit()
-
-    finally:
-        video.close()
-        print('Motion detecter terminated')
-'''
-
 def make_normal(*args):
-    global settings, effect_list
-    effect_list = []
-    face_effects = []
-    settings['colour'] = 'Normal'
+    global show_image, brightness, settings
+    settings['top_offset'] = 0
+    settings['bottom_offset'] = 0
+    settings['left_offset'] = 0
+    settings['right_offset'] = 0
+    brightness = 0
+    show_image = 1
 
 def make_grey(*args):
-    settings['colour'] = 'Grey'
+    global show_image
+    show_image = 2
 
 def make_blur(*args):
-    effect_list.append('Blur')
-    try:
-        effect_list.remove('Sharpen')
-    except ValueError:
-        print('Sharpen not happened yet')
+    global show_image
+    show_image = 3
 
 def make_bright(*args):
-    effect_list.append('Bright')
-    try:
-        effect_list.remove('Dark')
-    except ValueError:
-        print('Dark not happened yet')
+    global brightness
+    brightness = brightness + 25
 
 def make_dark(*args):
-    effect_list.append('Dark')
-    try:
-        effect_list.remove('Bright')
-    except ValueError:
-        print('Dark not happened yet')
-
+    global brightness
+    brightness = brightness - 25
 
 def make_edge_detection(*args):
-    effect_list.append('Edge Detection')
+    global show_image
+    show_image = 6
 
 def make_emboss(*args):
-    effect_list.append('Emboss')
+    global show_image
+    show_image = 7
 
 def make_sharpen(*args):
-    effect_list.append('Sharpen')
-    try:
-        effect_list.remove('Blur')
-    except ValueError:
-        print('Blur not happened yet')
+    global show_image
+    show_image = 8
 
 def make_sepia(*args):
-    settings['colour'] = 'Sepia'
+    global show_image
+    show_image = 9
 
 def make_zoom_in():
     #problem cross over zoom
@@ -276,13 +207,16 @@ def make_anticlockwise_rotate():
         settings['rotation'] = 3
 
 def detect_face():
-    face_effects.append('Face detection')
+    global show_image
+    show_image = 11
 
 def motion_tracker():
-    face_effects.append('Motion Tracker')
+    global show_image
+    show_image = 12
 
 def auto_focus():
-    face_effects.append('Autofocus')
+    global show_image
+    show_image = 13
 
 def make_show_image():
     global show_image
@@ -291,37 +225,52 @@ def make_show_image():
     elif show_image == 1:
         show_image = 0
 
-
 def show_frame(video_frame, height, width, cap):
-    global show_image, settings, effect_list, last_change
+    global show_image, settings, last_change, brightness
     _, frame = cap.read()
-    cv2image = cv2.flip(frame, 1)
-    #zoom = settings['zoom']
+    cv2image = cv2.rotate(frame, rotateCode=2)
     top_offset = settings['top_offset']
     bottom_offset = settings['bottom_offset']
     left_offset = settings['left_offset']
     right_offset = settings['right_offset']
-    rotation = settings['rotation']
-    if show_image == 1:
-        for effect in effect_list:
-            if effect != 'Face detection' and effect != 'Motion Tracker':
-                cv2image = effects(effect, cv2image)
-        #if settings['top_offset'] != 0 or settings['bottom_offset'] != 0 or settings['left_offset'] != 0 or settings['right_offset'] != 0:
-        if 'Motion Tracker' not in face_effects:
-            bottom_position = int(input_height-bottom_offset)
-            top_position = int(top_offset)
-            left_position = int(input_ratio*(left_offset))
-            right_position = int(input_width-(input_ratio*(right_offset)))
-            positions = [top_position, bottom_position, left_position, right_position]
-            cv2image = cv2image[positions[0]:positions[1], positions[2]:positions[3]]
-            last_change = [positions[0], positions[1], positions[2], positions[3]]
-        #if rotation != 0:
-            #cv2image = cv2.rotate(cv2image, rotateCode=(rotation - 1))
-        if ('Emboss' not in effect_list) and ('Edge Detection' not in effect_list):
-            cv2image = effects(settings['colour'], cv2image)
+    rotation = settings['rotation']    
+    if show_image == 0:
+        img = Image.open("/home/pi/Nothing_To_See.jpeg")
+    elif show_image == 1:
+        # Make Normal
+        cv2image = cv2.cvtColor(cv2image, cv2.COLOR_BGR2RGBA)
+    elif show_image == 2:
+        # Make Grey
+        cv2image = cv2.cvtColor(cv2image, cv2.COLOR_BGR2GRAY)
+    elif show_image == 3:
+        # Blur
+        cv2image = cv2.GaussianBlur(cv2image, (15, 15), 0)
+        cv2image = cv2.cvtColor(cv2image, cv2.COLOR_BGR2RGBA)
+    elif show_image == 6:
+        # Edge Detection
+        cv2image = cv2.Canny(cv2image, 100, 100)
+    elif show_image == 7:
+        # Emboss
+        cv2image = cv2.filter2D(cv2image, -1, np.array([[0, -1, -1], [1, 0, -1], [1, 1, 0]]))
+    elif show_image == 8:
+        # Sharpen
+        cv2image = cv2.filter2D(cv2image, -1, np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]]))
+        cv2image = cv2.cvtColor(cv2image, cv2.COLOR_BGR2RGBA)
+    elif show_image == 9:
+        # Sepia
+        cv2image = cv2.filter2D(cv2image, -1, np.array([[0.272, 0.534, 0.131], [0.349, 0.686, 0.168], [0.393, 0.769, 0.189]]))
+    elif show_image >=10:
+        cv2image = face_stuff(cv2image)
+        cv2image = cv2.cvtColor(cv2image, cv2.COLOR_BGR2RGBA)
     elif show_image == 0:
         img = Image.open("/home/pi/Nothing_To_see.jpg")
-    cv2image = face_stuff(cv2image, face_effects)
+    if settings['top_offset'] != 0 or settings['bottom_offset'] != 0 or settings['left_offset'] != 0 or settings['right_offset'] != 0:
+        bottom_position = int(input_height-bottom_offset)
+        top_position = int(top_offset)
+        left_position = int(1.33333*(left_offset))
+        right_position = int(input_width-(1.33333*(right_offset)))
+        cv2image = cv2image[top_position:bottom_position, left_position:right_position]
+    cv2image = cv2.convertScaleAbs(cv2image, beta=brightness)
     img = Image.fromarray(cv2image)
     wsize = width
     hsize = height
@@ -332,15 +281,8 @@ def show_frame(video_frame, height, width, cap):
     frame_show = function_maker(show_frame, video_frame, height, width, cap)
     video_frame.after(2, frame_show)
 
-def effects(effect_input, frame):
-    effect = {'Normal': cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA),
-              'Grey': cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY),
-              'Blur': cv2.GaussianBlur(frame, (15, 15), 0),
-              'Bright': cv2.convertScaleAbs(frame, beta=100),
-              'Dark': cv2.convertScaleAbs(frame, beta=-50),
-              'Edge Detection': cv2.Canny(frame, 100, 100),
-              'Emboss': cv2.filter2D(frame, -1, np.array([[0, -1, -1], [1, 0, -1], [1, 1, 0]])),
-              'Sharpen': cv2.filter2D(frame, -1, np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])),
-              'Sepia': cv2.filter2D(frame, -1,
-                                    np.array([[0.272, 0.534, 0.131], [0.349, 0.686, 0.168], [0.393, 0.769, 0.189]]))}
-    return effect[effect_input]
+def stop_stream():
+    global show_image
+    show_image = 0
+    time.sleep(0.5)
+    cv2.destroyAllWindows()

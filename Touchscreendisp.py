@@ -9,6 +9,7 @@ import pickle
 import os
 import threading
 import cv2
+import StreamSetting
 
 # See README for information about this
 
@@ -487,43 +488,23 @@ stream.grid_rowconfigure((1, 2), weight=3)
 stream.grid_columnconfigure((0, 1, 2, 3, 4), weight=1)
 stream.grid_rowconfigure(1, weight=4)
 
+def start_camera_stream():
+    vs.stop_stream()
+    cap.release()
+    threading.Thread(target = StreamSetting.STREAM_CAMERA_COMMAND).start()
 
-def start_stream():
-    # insert code here for checking WiFi connection, stream code (if it is in the correct format), camera + audio.
-    #
-    #
-    #
-    #
-    #
-    #
-
-    if wifi_connected['text'] != "Connected":
-        messagebox.showwarning("Wifi warning", "Please connect to wifi to stream")
-    elif current_code['text'] == "AHAHAHA":
-        messagebox.showwarning("Stream code warning", "Please input a valid stream code")
-    elif audio_connection == 0:
-        messagebox.showwarning("Audio warning", "No audio input detected")
-    elif video_connection == 0:
-        messagebox.showwarning("Video warning", "No video input detected")
-    else:
-        messagebox.showinfo("Full speed ahead", "Checks complete: We're good to go")
-        # code for turning button red
-        go_btn.configure(text='Stop', bg='red', command=stop_stream)
-        go_btn.pack()
-
-        # Here is the section where the code to start the stream should go
-        #
-
-
-def stop_stream():
-    # insert code for stopping stream here
-    #
-    go_btn.configure(text='Go', bg='green', command=start_stream)
-
+def start_screen_stream():
+    threading.Thread(target = StreamSetting.STREAM_SCREEN_COMMAND).start()
 
 # Go button
-go_btn = ttk.Button(stream, text='Go', command=start_stream)
-go_btn.grid(column=4, row=3)
+StreamButtons = Frame(stream)
+stream_btn = ttk.Button(StreamButtons, text='HQ Stream', command=start_camera_stream)
+stream_btn.grid(column=0, row=0)
+stream_btn = ttk.Button(StreamButtons, text='LQ Stream', command=start_screen_stream)
+stream_btn.grid(column=0, row=1)
+stream_btn = ttk.Button(StreamButtons, text='Stop', command=StreamSetting.STOP)
+stream_btn.grid(column=0, row=2)
+StreamButtons.grid(column=4, row=3, rowspan = 2)
 
 
 # Button to select between video options
@@ -532,7 +513,7 @@ arrow_width = 40
 arrow_height = 40
 
 uparrow = Image.open(
-    "\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\UpArrow.png")  # needs to be
+    "/home/pi/touchscreen-main/Touchscreen_photos/UpArrow.png")  # needs to be
 # whatever your directory is
 up_per = (arrow_width / float(uparrow.size[0]))
 height = int((float(uparrow.size[1]) * float(up_per)))
@@ -540,7 +521,7 @@ uparrow = uparrow.resize((arrow_width, height))
 uparrowrender = ImageTk.PhotoImage(uparrow)
 
 downarrow = Image.open(
-    "\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\DownArrow.png")  # needs to be
+    "/home/pi/touchscreen-main/Touchscreen_photos/DownArrow.png")  # needs to be
 # whatever your directory is
 down_per = (arrow_width / float(downarrow.size[0]))
 height = int((float(downarrow.size[1]) * float(down_per)))
@@ -548,7 +529,7 @@ downarrow = downarrow.resize((arrow_width, height))
 downarrowrender = ImageTk.PhotoImage(downarrow)
 
 leftarrow = Image.open(
-    "\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\LeftArrow.png")  # needs to be
+    "/home/pi/touchscreen-main/Touchscreen_photos/LeftArrow.png")  # needs to be
 # whatever your directory is
 left_per = (arrow_height / float(leftarrow.size[0]))
 height = int((float(leftarrow.size[1]) * float(left_per)))
@@ -556,7 +537,7 @@ leftarrow = leftarrow.resize((arrow_height, height))
 leftarrowrender = ImageTk.PhotoImage(leftarrow)
 
 rightarrow = Image.open(
-    "\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\RightArrow.png")  # needs to be
+    "/home/pi/touchscreen-main/Touchscreen_photos/RightArrow.png")  # needs to be
 # whatever your directory is
 right_per = (arrow_height / float(rightarrow.size[0]))
 rightarrow = rightarrow.resize((arrow_height, height))
@@ -619,7 +600,7 @@ video_customise.grid(column=4, row=0)
 
 # 400 for big, 300 for small
 stock_height = 250
-stock_width = int(1.7777777777 * stock_height)
+stock_width = int(1.33333 * stock_height)
 
 stock = Label(stream, bg=style.lookup('TFrame', 'background'))
 stock.grid(column=0, row=0, columnspan=3, rowspan=3, sticky='nw')
