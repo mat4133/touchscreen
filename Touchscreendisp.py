@@ -4,12 +4,12 @@ from PIL import Image, ImageTk
 from ttkthemes import ThemedStyle
 from Keyboard import create_keyboard, keyboard_on, function_maker
 import Wifi_file as wf
-import VideoSetting as vs
+import VideoSetting_uptodate as vs
 import pickle
 import os
 import threading
 import cv2
-import StreamSetting
+#import StreamSetting
 
 # See README for information about this
 
@@ -567,14 +567,14 @@ stream.grid_rowconfigure((1, 2), weight=3)
 stream.grid_columnconfigure((0, 1, 2, 3, 4), weight=1)
 stream.grid_rowconfigure(1, weight=4)
 
-camera_stream = function_maker(StreamSetting.STREAM_CAMERA_COMMAND, frame_rate.get(), bit_rate.get(), delay_value.get(), code_dic[current_codetext], platform.get(), 1)
+#camera_stream = function_maker(StreamSetting.STREAM_CAMERA_COMMAND, frame_rate.get(), bit_rate.get(), delay_value.get(), code_dic[current_codetext], platform.get(), 1)
 def start_camera_stream():
     global camera_stream_indicator 
     camera_stream_indicator = 1
     vs.stop_view()
     threading.Thread(target = camera_stream).start()
 
-screen_stream = function_maker(StreamSetting.STREAM_SCREEN_COMMAND, frame_rate.get(), bit_rate.get(), delay_value.get(), code_dic[current_codetext], platform.get(), 1)
+#screen_stream = function_maker(StreamSetting.STREAM_SCREEN_COMMAND, frame_rate.get(), bit_rate.get(), delay_value.get(), code_dic[current_codetext], platform.get(), 1)
 def start_screen_stream():
     global screen_stream_indicator 
     screen_stream_indicator = 1
@@ -608,15 +608,17 @@ arrow_width = 40
 arrow_height = 40
 
 uparrow = Image.open(
-    "/home/pi/touchscreen-main/Touchscreen_photos/UpArrow.png")  # needs to be
-# whatever your directory is
+    '\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\UpArrow.png')
+    #"/home/pi/touchscreen-main/Touchscreen_photos/UpArrow.png")  # needs to be
+#
 up_per = (arrow_width / float(uparrow.size[0]))
 height = int((float(uparrow.size[1]) * float(up_per)))
 uparrow = uparrow.resize((arrow_width, height))
 uparrowrender = ImageTk.PhotoImage(uparrow)
 
 downarrow = Image.open(
-    "/home/pi/touchscreen-main/Touchscreen_photos/DownArrow.png")  # needs to be
+    '\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\DownArrow.png')
+    #"/home/pi/touchscreen-main/Touchscreen_photos/DownArrow.png")  # needs to be
 # whatever your directory is
 down_per = (arrow_width / float(downarrow.size[0]))
 height = int((float(downarrow.size[1]) * float(down_per)))
@@ -624,7 +626,8 @@ downarrow = downarrow.resize((arrow_width, height))
 downarrowrender = ImageTk.PhotoImage(downarrow)
 
 leftarrow = Image.open(
-    "/home/pi/touchscreen-main/Touchscreen_photos/LeftArrow.png")  # needs to be
+    '\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\LeftArrow.png')
+    #"/home/pi/touchscreen-main/Touchscreen_photos/LeftArrow.png")  # needs to be
 # whatever your directory is
 left_per = (arrow_height / float(leftarrow.size[0]))
 height = int((float(leftarrow.size[1]) * float(left_per)))
@@ -632,7 +635,8 @@ leftarrow = leftarrow.resize((arrow_height, height))
 leftarrowrender = ImageTk.PhotoImage(leftarrow)
 
 rightarrow = Image.open(
-    "/home/pi/touchscreen-main/Touchscreen_photos/RightArrow.png")  # needs to be
+    #"/home/pi/touchscreen-main/Touchscreen_photos/RightArrow.png")
+    '\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\RightArrow.png')  # needs to be
 # whatever your directory is
 right_per = (arrow_height / float(rightarrow.size[0]))
 rightarrow = rightarrow.resize((arrow_height, height))
@@ -650,9 +654,11 @@ customise_names = [['Reset', vs.make_normal, 'Reset'], ['Make Grey', vs.make_gre
                    [rightarrowrender, vs.make_pan_right, 'Zoom/Pan'], [uparrowrender, vs.make_pan_up, 'Zoom/Pan'],
                    [downarrowrender, vs.make_pan_down, 'Zoom/Pan'],
                    ['Outline', vs.make_edge_detection, 'Effects'], ['Sepia', vs.make_sepia, 'Colour'],
-                   ['Face Detection', vs.detect_face, 'Effects'], ['Motion Tracker', vs.motion_tracker, 'Effects']]
+                   ['Face Detection', vs.detect_face, 'Effects'], ['Motion Tracker', vs.motion_tracker, 'Effects'],
+                    ['Autofocus', vs.auto_focus, 'Effects'], ['LQ stream start', start_screen_stream, 'Start'],
+                   ['HQ stream start', start_camera_stream, 'Start'], ['Stop', stop_stream, 'Start']]
 
-windows_names = ['Reset', 'Colour', 'Properties', 'Rotate', 'Zoom/Pan', 'Effects']
+windows_names = ['Reset', 'Colour', 'Properties', 'Rotate', 'Zoom/Pan', 'Effects', 'Start']
 windows = list(range(len(windows_names)))
 buttons = list(range(len(customise_names)))
 
@@ -665,9 +671,9 @@ for i in range(len(windows)):
         windows[i].add_button(j)
 
 windows_dic = {'Reset': windows[0], 'Colour': windows[1], 'Properties': windows[2], 'Rotate': windows[3],
-               'Zoom/Pan': windows[4], 'Effects': windows[5]}
+               'Zoom/Pan': windows[4], 'Effects': windows[5], 'Start':windows[6]}
 
-current_window = windows_dic['Zoom/Pan']
+current_window = windows_dic['Start']
 current_window.create_window()
 
 
