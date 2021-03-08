@@ -25,14 +25,16 @@ def STREAM_CAMERA_COMMAND(FPS, BITRATE, VIDEOBUFFER, KEY, PLATFORM, AUDIO):
     global flag
     PiCamera().close()
     camera = picamera.PiCamera(resolution=(1280, 720), framerate=FPS)
-    if AUDIO == 0:
+    if AUDIO == 1:
         VOLUME = 0
-    elif AUDIO == 1:
+    elif AUDIO == 0:
         VOLUME = 256
     if PLATFORM == 1:
         STREAMURL = 'rtmp://a.rtmp.youtube.com/live2/'
     elif PLATFORM == 0:
         STREAMURL = 'rtmps://live-api-s.facebook.com:443/rtmp/'
+    KEY = "\"" + str(KEY) + "\""
+    print(KEY)
     stream_pipe = subprocess.Popen(
         '/home/pi/FFmpeg-n4.1.3/ffmpeg -use_wallclock_as_timestamps 1 -thread_queue_size 32K -f h264 -r ' + str(FPS) + ' -itsoffset 0 -i - -f alsa -ar 11025 -itsoffset ' + str(VIDEOBUFFER) + ' -ac 1 -thread_queue_size 32K -i pulse -use_wallclock_as_timestamps 1 -vol ' + str(VOLUME) + ' -c:a aac -async 1 -c:v libx264 -preset ultrafast -f flv -r ' + str(FPS) + ' ' + str(STREAMURL) + str(KEY),
         stdin=subprocess.PIPE, shell=True)
@@ -55,9 +57,9 @@ def STREAM_CAMERA_COMMAND(FPS, BITRATE, VIDEOBUFFER, KEY, PLATFORM, AUDIO):
 
 
 def STREAM_SCREEN_COMMAND(FPS, BITRATE, VIDEOBUFFER, KEY, PLATFORM, AUDIO):
-    if AUDIO == 0:
+    if AUDIO == 1:
         VOLUME = 0
-    elif AUDIO == 1:
+    elif AUDIO == 0:
         VOLUME = 256
     if PLATFORM == 1:
         STREAMURL = 'rtmp://a.rtmp.youtube.com/live2/'
