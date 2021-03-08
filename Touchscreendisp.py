@@ -4,12 +4,12 @@ from PIL import Image, ImageTk
 from ttkthemes import ThemedStyle
 from Keyboard import create_keyboard, keyboard_on, function_maker
 import Wifi_file as wf
-import VideoSetting_uptodate as vs
+import VideoSetting as vs
 import pickle
 import os
 import threading
 import cv2
-#import StreamSetting
+import StreamSetting
 
 # See README for information about this
 
@@ -194,17 +194,18 @@ def password_keyboard_off(current_frame):
     # username_lbl.grid(column=0, row=2)
 
 saved_networks = wf.save_get()
-#print(saved_networks)
+print('Saved_networks:', saved_networks)
 
 counter = 0
 connected = False
-
+'''
 while (counter < len(saved_networks) and connected == False):
     counter += 1
     connected = wf.save_conf(saved_networks[counter-1],0)
 
 counter = 0
-
+'''
+saved_networks = []
 wifi_login.grid_rowconfigure((0, 1, 2, 3, 4), weight=1)
 wifi_login.grid_columnconfigure((0, 1), weight=1)
 
@@ -240,6 +241,7 @@ candidate_network = 'none'
 
 def connect():
     global candidate_network
+    print(candidate_network)
     try:
         candidate_network.password = password_text.get()
         if candidate_network in saved_networks:
@@ -567,14 +569,14 @@ stream.grid_rowconfigure((1, 2), weight=3)
 stream.grid_columnconfigure((0, 1, 2, 3, 4), weight=1)
 stream.grid_rowconfigure(1, weight=4)
 
-#camera_stream = function_maker(StreamSetting.STREAM_CAMERA_COMMAND, frame_rate.get(), bit_rate.get(), delay_value.get(), code_dic[current_codetext], platform.get(), 1)
+camera_stream = function_maker(StreamSetting.STREAM_CAMERA_COMMAND, frame_rate.get(), bit_rate.get(), delay_value.get(), code_dic[value.get()], platform.get(), 1)
 def start_camera_stream():
     global camera_stream_indicator 
     camera_stream_indicator = 1
     vs.stop_view()
     threading.Thread(target = camera_stream).start()
 
-#screen_stream = function_maker(StreamSetting.STREAM_SCREEN_COMMAND, frame_rate.get(), bit_rate.get(), delay_value.get(), code_dic[current_codetext], platform.get(), 1)
+screen_stream = function_maker(StreamSetting.STREAM_SCREEN_COMMAND, frame_rate.get(), bit_rate.get(), delay_value.get(), code_dic[value.get()], platform.get(), 1)
 def start_screen_stream():
     global screen_stream_indicator 
     screen_stream_indicator = 1
@@ -608,8 +610,8 @@ arrow_width = 40
 arrow_height = 40
 
 uparrow = Image.open(
-    '\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\UpArrow.png')
-    #"/home/pi/touchscreen-main/Touchscreen_photos/UpArrow.png")  # needs to be
+    #'\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\UpArrow.png')
+    "/home/pi/touchscreen-main/Touchscreen_photos/UpArrow.png")  # needs to be
 #
 up_per = (arrow_width / float(uparrow.size[0]))
 height = int((float(uparrow.size[1]) * float(up_per)))
@@ -617,8 +619,8 @@ uparrow = uparrow.resize((arrow_width, height))
 uparrowrender = ImageTk.PhotoImage(uparrow)
 
 downarrow = Image.open(
-    '\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\DownArrow.png')
-    #"/home/pi/touchscreen-main/Touchscreen_photos/DownArrow.png")  # needs to be
+    #'\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\DownArrow.png')
+    "/home/pi/touchscreen-main/Touchscreen_photos/DownArrow.png")  # needs to be
 # whatever your directory is
 down_per = (arrow_width / float(downarrow.size[0]))
 height = int((float(downarrow.size[1]) * float(down_per)))
@@ -626,23 +628,20 @@ downarrow = downarrow.resize((arrow_width, height))
 downarrowrender = ImageTk.PhotoImage(downarrow)
 
 leftarrow = Image.open(
-    '\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\LeftArrow.png')
-    #"/home/pi/touchscreen-main/Touchscreen_photos/LeftArrow.png")  # needs to be
+    #'\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\LeftArrow.png')
+    "/home/pi/touchscreen-main/Touchscreen_photos/LeftArrow.png")  # needs to be
 # whatever your directory is
 left_per = (arrow_height / float(leftarrow.size[0]))
 height = int((float(leftarrow.size[1]) * float(left_per)))
 leftarrow = leftarrow.resize((arrow_height, height))
 leftarrowrender = ImageTk.PhotoImage(leftarrow)
 
-rightarrow = Image.open(
-    #"/home/pi/touchscreen-main/Touchscreen_photos/RightArrow.png")
-    '\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\RightArrow.png')  # needs to be
+rightarrow = Image.open("/home/pi/touchscreen-main/Touchscreen_photos/RightArrow.png")
+    #'\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\RightArrow.png'  # needs to be
 # whatever your directory is
 right_per = (arrow_height / float(rightarrow.size[0]))
 rightarrow = rightarrow.resize((arrow_height, height))
 rightarrowrender = ImageTk.PhotoImage(rightarrow)
-
-
 
 customise_names = [['Reset', vs.make_normal, 'Reset'], ['Make Grey', vs.make_grey, 'Colour'],
                    ['Brightness up', vs.make_bright, 'Properties'], ['Brightness down', vs.make_dark, 'Properties'],

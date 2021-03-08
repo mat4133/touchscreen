@@ -104,4 +104,4 @@ def disconnect():
 #connect()
 #wifi_find()
 
-dump([])
+#dump([])
