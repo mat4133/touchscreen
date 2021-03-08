@@ -12,6 +12,8 @@ input_width = 640
 input_height = 480
 input_ratio = input_width/input_height
 
+cap = cv2.VideoCapture(0)
+
 #file_name = 'saved_settings'
 #settings_values = open(file_name,'rb')
 #settings = pickle.load(settings_values)
@@ -19,8 +21,10 @@ input_ratio = input_width/input_height
 #default settings
 show_image = 1
 brightness = 0
+check = 1
+check_2 = 0
 
-settings = {'rotation': 0, 'top_offset': 0, 'bottom_offset': 0, 'left_offset': 0, 'right_offset': 0}
+settings = {'rotation': 3, 'top_offset': 0, 'bottom_offset': 0, 'left_offset': 0, 'right_offset': 0}
 last_change = np.array([0, input_height, 0, input_width]) #format is top bottom left right
 
 def reduce_zoom(positions):
@@ -52,16 +56,20 @@ def reduce_zoom(positions):
             positions[i] = int(last_change[i] - 9 * multiplier*ratio_list[i])
             last_change[i] = positions[i]
     print('New positions', list(positions))
+    positions[0] = max(0, positions[0])
+    positions[1] = min(input_height, positions[1])
+    positions[2] = max(0, positions[2])
+    positions[3] = min(input_width, positions[3])
     return list(positions)
 
 
-def face_focus(faces):
+def face_focus(faces,zoom):
     image_height = faces[0][3]
-    extended_height = image_height * 1.5
-    top_position = int(faces[0][1] + image_height * 0.5 - extended_height / 2)
-    bottom_position = int(faces[0][1] + 0.5 * image_height + extended_height / 2)
-    right_position = int(faces[0][0] + 0.5 * (image_height + extended_height * input_ratio))
-    left_position = int(faces[0][0] + 0.5 * (image_height - extended_height * input_ratio))
+    extended_height = image_height * zoom
+    top_position = max(int(faces[0][1] + image_height * 0.5 - extended_height / 2), 0)
+    bottom_position = min(int(faces[0][1] + 0.5 * image_height + extended_height / 2), input_height)
+    right_position = min(int(faces[0][0] + 0.5 * (image_height + extended_height * input_ratio)), input_width)
+    left_position = max(int(faces[0][0] + 0.5 * (image_height - extended_height * input_ratio)), 0)
     return [top_position,bottom_position, left_position, right_position]
 
 def face_stuff(cv2image):
@@ -74,7 +82,7 @@ def face_stuff(cv2image):
                 cv2.rectangle(cv2image, (x, y), (x + w, y + h), (0, 200, 0), 4)
         if show_image == 12:
             if len(detected_faces) == 1:
-                positions = face_focus(detected_faces)
+                positions = face_focus(detected_faces, 1.5)
                 positions = reduce_zoom(positions)
                 cv2image = cv2image[positions[0]:positions[1], positions[2]:positions[3]]
             else:
@@ -91,7 +99,12 @@ def face_stuff(cv2image):
                 cv2image = cv2image[positions[0]:positions[1], positions[2]:positions[3]]
         if show_image == 13:
             if len(detected_faces) == 1:
-                positions = face_focus(detected_faces)
+                positions = face_focus(detected_faces, 1.2)
+                face = cv2image[positions[0]:positions[1], positions[2]:positions[3]]
+                focused_face = cv2.filter2D(face, -1, np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]]))
+                blurred_face = cv2.GaussianBlur(cv2image, (35, 35), 0)
+                blurred_face[positions[0]:positions[1], positions[2]:positions[3]] = focused_face
+                cv2image = blurred_face
         return cv2image
     else:
         return cv2image
@@ -109,6 +122,7 @@ def make_normal(*args):
     settings['bottom_offset'] = 0
     settings['left_offset'] = 0
     settings['right_offset'] = 0
+    settings['rotation'] = 3
     brightness = 0
     show_image = 1
 
@@ -145,11 +159,13 @@ def make_sepia(*args):
     show_image = 9
 
 def make_zoom_in():
-    #problem cross over zoom
-    settings['left_offset'] += 10
-    settings['right_offset'] += 10
-    settings['top_offset'] += 10
-    settings['bottom_offset'] += 10
+    pot_hos_diff = (input_width-(settings['right_offset']+10)*input_ratio) - settings['left_offset']*input_ratio
+    pot_vert_diff = input_height-settings['bottom_offset'] - settings['top_offset']
+    if pot_hos_diff > 20 and pot_vert_diff > 20:
+        settings['left_offset'] += 10
+        settings['right_offset'] += 10
+        settings['top_offset'] += 10
+        settings['bottom_offset'] += 10
 
 def make_zoom_out():
     if settings['left_offset'] <=0 and settings['right_offset'] <=0:
@@ -197,11 +213,17 @@ def make_pan_down():
         settings['bottom_offset'] -= 10
 
 def make_clockwise_rotate():
+    global check, check_2
+    check = 0
+    check_2 = 0
     settings['rotation'] += 1
     if settings['rotation'] == 4:
         settings['rotation'] = 0
 
 def make_anticlockwise_rotate():
+    global check, check_2
+    check = 0
+    check_2 = 0
     settings['rotation'] -= 1
     if settings['rotation'] == -1:
         settings['rotation'] = 3
@@ -225,18 +247,37 @@ def make_show_image():
     elif show_image == 1:
         show_image = 0
 
-def show_frame(video_frame, height, width, cap):
+def cap_set(video_frame, height, width):
+    cap.set(3,input_height)
+    cap.set(4,input_width)
+    show_frame(video_frame, height, width)
+
+def rotate():
+    global check
+    if check == 0:
+        check = 1
+        cap.set(4,input_height)
+        cap.set(3,input_width)
+
+def rotate2():
+    global check_2
+    if check_2 == 0:
+        check_2 = 1
+        cap.set(3,input_height)
+        cap.set(4,input_width)
+
+def show_frame(video_frame, height, width):
     global show_image, settings, last_change, brightness
-    _, frame = cap.read()
-    cv2image = cv2.rotate(frame, rotateCode=2)
     top_offset = settings['top_offset']
     bottom_offset = settings['bottom_offset']
     left_offset = settings['left_offset']
     right_offset = settings['right_offset']
-    rotation = settings['rotation']    
-    if show_image == 0:
-        img = Image.open("/home/pi/Nothing_To_See.jpeg")
-    elif show_image == 1:
+    rotation = settings['rotation']
+    _, frame = cap.read()
+    cv2image = cv2.rotate(frame, rotateCode=2)
+    #if show_image == 0:
+    #    img = Image.open("/home/pi/Nothing_To_See.jpeg")
+    if show_image == 1:
         # Make Normal
         cv2image = cv2.cvtColor(cv2image, cv2.COLOR_BGR2RGBA)
     elif show_image == 2:
@@ -262,14 +303,22 @@ def show_frame(video_frame, height, width, cap):
     elif show_image >=10:
         cv2image = face_stuff(cv2image)
         cv2image = cv2.cvtColor(cv2image, cv2.COLOR_BGR2RGBA)
-    elif show_image == 0:
-        img = Image.open("/home/pi/Nothing_To_see.jpg")
+    #elif show_image == 0:
+        #img = Image.open("/home/pi/Nothing_To_see.jpg")
     if settings['top_offset'] != 0 or settings['bottom_offset'] != 0 or settings['left_offset'] != 0 or settings['right_offset'] != 0:
         bottom_position = int(input_height-bottom_offset)
         top_position = int(top_offset)
         left_position = int(1.33333*(left_offset))
         right_position = int(input_width-(1.33333*(right_offset)))
         cv2image = cv2image[top_position:bottom_position, left_position:right_position]
+    if rotation == 1:
+        rotate2()
+        cv2image = cv2.rotate(cv2image, rotateCode=rotation)
+    if rotation == 3:
+        rotate2()
+    if rotation == 0 or rotation == 2:
+        rotate()
+        cv2image = cv2.rotate(cv2image, rotateCode=rotation)
     cv2image = cv2.convertScaleAbs(cv2image, beta=brightness)
     img = Image.fromarray(cv2image)
     wsize = width
@@ -278,11 +327,14 @@ def show_frame(video_frame, height, width, cap):
     imgtk = ImageTk.PhotoImage(image=img)
     video_frame.imgtk = imgtk
     video_frame.configure(image=imgtk)
-    frame_show = function_maker(show_frame, video_frame, height, width, cap)
-    video_frame.after(2, frame_show)
+    frame_show = function_maker(show_frame, video_frame, height, width)
+    video_frame.after(1, frame_show)
 
-def stop_stream():
-    global show_image
-    show_image = 0
+def stop_view():
     time.sleep(0.5)
-    cv2.destroyAllWindows()
+    cap.release()
+
+def start_view():
+    time.sleep(1)
+    cap.open(0)
+    make_normal()
