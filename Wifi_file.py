@@ -50,7 +50,6 @@ def dump(saved_networks):
     network_file.close()
 
 def save_get():
-    global saved_networks
     network_file = open('Saved_wifi', 'rb')
     saved_networks = pickle.load(network_file)
     network_file.close()
@@ -71,7 +70,7 @@ def save_conf(*args):
     if c == True:
         saved_networks.append(candidate_network)
         if args[1] == 1:
-            dump(candidate_network)
+            dump(saved_networks)
         return True
     else:
         return False
@@ -104,3 +103,5 @@ def disconnect():
 #phone = network('AndroidAP0A38','pgzw6963')
 #connect()
 #wifi_find()
+
+dump([])
