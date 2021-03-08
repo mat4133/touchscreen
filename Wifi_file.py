@@ -1,34 +1,50 @@
 import os
 import pickle
-from wifi import Cell
+import time
 
 
 
 class network():
-    def __init__(self, SSID, password, encryption):
+    def __init__(self, SSID, password):
         self.SSID = str(SSID)
         self.password = password
         self.priority = 0
-        self.encryption = encryption
+        self.number = None
+
+    def __repr__(self):
+        return self.SSID
+
 
 saved_networks = []
 
+def wifi_find():
+    a = os.popen("sudo iwlist wlan0 scan | perl -nle '/ESSID:(.*)$/ && print $1'").read()
+    print(a)
+    network_list = []
+    capture = False
+    network = ''
+    for i in range(len(a)):
+        if a[i] == '"' and capture == True:
+            capture = not capture
+            if network[0:2] != '\\' and network[0:2] != '\\x':
+                network_list.append(network)
+        elif a[i] == '"' and capture == False:
+            capture = not capture
+            network = ''
+        elif capture == True:
+            network += a[i]
+    return network_list
+
+
 def scan():
-    wifi_list = list(Cell.all('wlan0'))
+    wifi_list = wifi_find()
     display_list = []
     for networks in wifi_list:
-        if networks.ssid == 'X/X/X/X/X/X/X/X/X/X/X':
-            print('hidden network')
-        else:
-            if networks.encrypted == True:
-                display_list.append(network(networks.ssid, 'unknown', networks.encryption_type))
-            else:
-                display_list.append(network(networks.ssid, 'N/A', 'None'))
+            display_list.append(network(networks, 'unknown'))
     return display_list
 
 
-def dump():
-    global saved_networks
+def dump(saved_networks):
     network_file = open('Saved_wifi', 'wb')
     pickle.dump(saved_networks, network_file)
     network_file.close()
@@ -38,36 +54,31 @@ def save_get():
     network_file = open('Saved_wifi', 'rb')
     saved_networks = pickle.load(network_file)
     network_file.close()
+    return saved_networks
 
 def save_conf(*args):
-    global saved_networks
     candidate_network = args[0]
-    if candidate_network in saved_networks:
-        print('This network has already been saved')
-    elif candidate_network != 'none':
+    os.popen('wpa_cli list_networks').read()
+    #insert stuff to find all networks then delete them all from wpa_cli
+    a = 'wpa_cli set_network 0 ssid '+"'"+'"'+candidate_network.SSID+'"'+"'"
+    os.popen(a).read()
+    b = 'wpa_cli set_network 0 psk '+"'"+'"'+candidate_network.password+'"'+"'"
+    os.popen(b).read()
+    os.popen('wpa_cli save_conf').read()
+    os.popen('wpa_cli -i wlan0 reconfigure').read()
+    time.sleep(2)
+    c = connect()
+    if c == True:
         saved_networks.append(candidate_network)
-        change_priority(candidate_network)
-    conf_file = open('/etc/wpa_supplicant/wpa_supplicant.conf', 'w')
-    conf_file.write('ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev')
-    conf_file.write('\n')
-    conf_file.write('update_config=1')
-    conf_file.write('\n')
-    conf_file.write('country=GB')
-    conf_file.write('\n')
-    for networks in saved_networks:
-        conf_file.write('\n')
-        conf_file.write('network = {')
-        conf_file.write('\n')
-        conf_file.write('ssid="'+networks.SSID+'"')
-        conf_file.write('\n')
-        conf_file.write('psk="'+networks.password+'"')
-        conf_file.write('\n')
-        if networks.priority == 1:
-            conf_file.write('priority=1')
-            conf_file.write('\n')
-        conf_file.write('}')
-    conf_file.close()
+        if args[1] == 1:
+            dump(candidate_network)
+        return True
+    else:
+        return False
 
+    #os.system('wpa_passphrase '+ str(candidate_network.SSID)+' ' + str(candidate_network.password) +' >> /etc/wpa_supplicant/wpa_supplicant.conf')
+
+'''
 def change_priority(network):
     global saved_networks
     for i in saved_networks:
@@ -75,14 +86,21 @@ def change_priority(network):
             i.priority = 1
         else:
             i.priority = 0
+'''
 
 def connect():
-    os.system('sudo ifconfig wlan0 down')
-    os.system('sudo ifconfig wlan0 up')
+    os.system('sudo rfkill block wifi')
+    os.system('sudo rfkill unblock wifi')
+    time.sleep(8)
+    a = os.popen('ifconfig wlan0').read()
+    print(a)
+    if 'inet' in a:
+        return True
 
 def disconnect():
-    os.system('sudo ifconfig wlan0 down')
+    os.system('sudo rfkill block wifi')
 
-#conf_file_read = open('/etc/wpa_supplicant/wpa_supplicant.conf', 'r')
-
-#home = network('Glide0028763-2G', 'B47E0A0FD2')
+#home = network('BT-5HAC5X', 'TpUrbaEcGg9gFL')
+#phone = network('AndroidAP0A38','pgzw6963')
+#connect()
+#wifi_find()

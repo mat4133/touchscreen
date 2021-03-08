@@ -16,10 +16,8 @@ import StreamSetting
 starting = 0
 audio_connection = 0
 video_connection = 0
-
-cap = cv2.VideoCapture(0)
-cap.set(3,480)
-cap.set(4,640)
+camera_stream_indicator = 0
+screen_stream_indicator = 0
 
 class Customise_button(ttk.Button):
     def __init__(self, parent, text, command):
@@ -29,11 +27,15 @@ class Customise_button(ttk.Button):
             super().__init__(stream, image=text, command=command)
         else:
             self.name = text
-            super().__init__(stream, text=text, command=command)
+            if self.name == 'LQ stream start' or self.name == 'HQ stream start':
+                super().__init__(stream, text=text, command=command, style='W.TButton')
+            elif self.name == 'Stop':
+                super().__init__(stream, text=text, command=command, style='B.TButton')
+            else:
+                super().__init__(stream, text=text, command=command)
 
     def __repr__(self):
         return (self.name)
-
 
 class Customise_window():
     def __init__(self, name):
@@ -49,7 +51,11 @@ class Customise_window():
             self.button_list[0].grid(column=0, row=3, columnspan=3)
         if len(self.button_list) == 2:
             self.button_list[0].grid(column=0, row=3, columnspan=3)
-            self.button_list[1].grid(column=2, row=1, rowspan=2)
+            self.button_list[1].grid(column=4, row=1, rowspan=2)
+        if len(self.button_list) == 3:
+            self.button_list[0].grid(column=0, row=3, columnspan=1, sticky='nesw')
+            self.button_list[1].grid(column=1, row=3, columnspan=3, sticky='nesw')
+            self.button_list[2].grid(column=4, row=3, sticky='nesw')
         if len(self.button_list) == 4:
             self.button_list[0].grid(column=0, row=3, columnspan=2)
             self.button_list[1].grid(column=2, row=3, columnspan=2)
@@ -62,7 +68,7 @@ class Customise_window():
             self.button_list[3].grid(column=1, row=3, rowspan=2)
             self.button_list[4].grid(column=4, row=1)
             self.button_list[5].grid(column=4, row=2)
-
+    
     def close_window(self):
         for i in self.button_list:
             i.grid_forget()
@@ -73,33 +79,40 @@ class Customise_window():
 # Functions for resetting back to the default settings
 def set_defaults():
     settings_file = open('settings_file', 'wb')
-    settings_dic = {'bit_rate': 30, 'frame_rate': 30, 'audioless': False, 'audio_delay': 200}
+    settings_dic = {'bit_rate': 6000000, 'frame_rate': 30, 'audioless': False, 'audio_delay': 0, 'platform': 0}
     pickle.dump(settings_dic, settings_file)
     settings_file.close()
 
 
 # Function for reading the settings from settings_file
 def inital_settings():
-    global frame_rate, delay_value, chk_state, bit_rate
-    previous_settings = open('settings_file', 'rb')
-    saved_values = pickle.load(previous_settings)
-    chk_state = IntVar(value=saved_values['audioless'])
-    bit_rate = DoubleVar(value=saved_values['bit_rate'])
-    frame_rate = DoubleVar(value=saved_values['frame_rate'])
-    delay_value = DoubleVar(value=saved_values['audio_delay'])
-    previous_settings.close()
-
+    global frame_rate, delay_value, chk_state, bit_rate, platform
+    try:
+        previous_settings = open('settings_file', 'rb')
+        saved_values = pickle.load(previous_settings)
+        chk_state = IntVar(value=saved_values['audioless'])
+        bit_rate = DoubleVar(value=saved_values['bit_rate'])
+        frame_rate = DoubleVar(value=saved_values['frame_rate'])
+        delay_value = DoubleVar(value=saved_values['audio_delay'])
+        platform = IntVar(value=saved_values['platform'])
+        previous_settings.close()
+    except:
+        set_defaults()
+        chk_state = IntVar(value = False)
+        bit_rate = DoubleVar(value = 6000000)
+        frame_rate = DoubleVar(value = 30)
+        delay_value = DoubleVar(value = 0)
+        platform = IntVar(value=0)
 
 # Function for updating file every 5 seconds with new settings
 def update_settings(*args):
-    global frame_rate, delay_value, chk_state, bit_rate
+    global frame_rate, delay_value, chk_state, bit_rate, platform
     settings_dic = {'bit_rate': bit_rate.get(), 'frame_rate': frame_rate.get(), 'audioless': chk_state.get(),
-                    'audio_delay': delay_value.get()}
+                    'audio_delay': delay_value.get(), 'platform': platform.get()}
     settings_file = open('settings_file', 'wb')
     pickle.dump(settings_dic, settings_file)
     settings_file.close()
     threading.Timer(5, update_settings).start()
-
 
 app = Tk()
 
@@ -113,6 +126,9 @@ app.geometry('480x320')
 # initializing style
 style = ThemedStyle(app)
 style.set_theme("equilux")
+
+style.configure('W.TButton', foreground='green')
+style.configure('B.TButton', foreground='red')
 
 # background colour from theme equilux
 bg = style.lookup('TFrame', 'background')
@@ -134,6 +150,10 @@ settings2 = ttk.Frame(note)
 settings2.pack(fill=BOTH, expand=True)
 wifi_login = ttk.Frame(note)
 tutorial = ttk.Frame(note)
+
+stock_height = 250
+stock_width = int(1.33333 * stock_height)
+stock = Label(stream, bg=style.lookup('TFrame', 'background'))
 
 note.add(stream, text="STREAM")
 note.add(settings2, text="SETTINGS")
@@ -173,6 +193,17 @@ def password_keyboard_off(current_frame):
     # username_entr.grid(column=1, row=2)
     # username_lbl.grid(column=0, row=2)
 
+saved_networks = wf.save_get()
+#print(saved_networks)
+
+counter = 0
+connected = False
+
+while (counter < len(saved_networks) and connected == False):
+    counter += 1
+    connected = wf.save_conf(saved_networks[counter-1],0)
+
+counter = 0
 
 wifi_login.grid_rowconfigure((0, 1, 2, 3, 4), weight=1)
 wifi_login.grid_columnconfigure((0, 1), weight=1)
@@ -180,21 +211,27 @@ wifi_login.grid_columnconfigure((0, 1), weight=1)
 # Code for Wifi connection
 wifi_label = ttk.Label(wifi_login, text='WiFi')
 wifi_label.grid(column=0, row=0)
-wifi_connected = ttk.Label(wifi_login, text='Unconnected')
+
+if connected == False:
+    wifi_connected = ttk.Label(wifi_login, text='Unconnected')
+else:
+    wifi_connected = ttk.Label(wifi_login, text='Connected')
 wifi_connected.grid(column=1, row=0)
 
 search_label = ttk.Label(wifi_login, text='Nearby Networks')
 search_label.grid(column=0, row=1)
 
+
 def password_filler(*args):
-    global candidate_network
+    global candidate_network, saved_networks
     saved = 0
-    for networks in wf.saved_networks:
-        if networks.SSID == args[0]:
+    for networks in saved_networks:
+        if networks.SSID == args[0].SSID:
             password_text.set(networks.password)
             saved = 1
     for networks in search_list:
-        if networks.SSID == args[0]:
+        #print(type(networks.SSID), type(args[0].SSID))
+        if networks.SSID == args[0].SSID:
             candidate_network = networks
     if saved == 0:
         password_text.set('')
@@ -203,9 +240,20 @@ candidate_network = 'none'
 
 def connect():
     global candidate_network
-    candidate_network.password = password_text.get()
-    wf.save_conf(candidate_network)
-    wf.dump()
+    try:
+        candidate_network.password = password_text.get()
+        if candidate_network in saved_networks:
+            success = wf.save_conf(candidate_network, 0)
+        else:
+            success = wf.save_conf(candidate_network, 1)
+        if success == False:
+            failed_connection = messagebox.showerror("Wifi connection failed")
+        else:
+            wifi_connected.configure(text="Connected")
+        wf.dump()
+    except:
+        print("No Network Detected")
+    
 
 search_list = wf.scan()
 #search_list = ['list of networks', 'Glide0028763-5G', 'Glide0028763-2G']
@@ -234,7 +282,7 @@ password_entr = ttk.Entry(wifi_login, show='*', textvariable=password_text)
 password_entr.grid(column=1, row=2)
 password_entr.bind("<Button>", password_space_wifi)
 
-toggle_btn = ttk.Button(wifi_login, text='Show password', command=toggle_password)
+toggle_btn = ttk.Button(wifi_login, text='Show Password', command=toggle_password)
 
 connect_btn = ttk.Button(wifi_login, text='CONNECT/SAVE', command=connect)
 connect_btn.grid(columnspan=2, row=3)
@@ -304,25 +352,29 @@ file_name = 'stream_codes'
 
 # reading the stream codes from memory
 stored_codes2 = open(file_name, 'rb')
-code_list = pickle.load(stored_codes2)
+codedic_list = pickle.load(stored_codes2)
+code_list = codedic_list[0]
+code_dic = codedic_list[1]
 stored_codes2.close()
-
 
 # code for entering a new key
 def enter_code():
-    global code_list
+    global code_list, code_dic
     input_code = stream_code.get()
-
+    actual_code = input_code
     # checks if this is the first key entered and if so deletes the '' that was in it's place
+    if len(input_code) > 10:
+        input_code = input_code[0:10] + '...'
+    code_dic[input_code] = actual_code
     if code_list[0] == '':
         code_list.remove('')
         existing_codes['menu'].delete(0)
 
     code_list.insert(0, input_code)
-
+    codedic_list = [code_list, code_dic]
     # adds the new key to a file
     stored_codes1 = open(file_name, 'wb')
-    pickle.dump(code_list, stored_codes1)
+    pickle.dump(codedic_list, stored_codes1)
     stored_codes1.close()
 
     # redoes the label displaying the current code
@@ -343,8 +395,9 @@ def clear_code():
 
     # Clearing stream keys from memory
     code_list = ['']
+    codedic_list = [code_list, {}]
     stored_codes = open(file_name, 'wb')
-    pickle.dump(code_list, stored_codes)
+    pickle.dump(codedic_list, stored_codes)
     stored_codes.close()
 
     # Clearing stream keys from GUI
@@ -475,11 +528,37 @@ bit_rate_scroller.grid(column=1, row=7, columnspan=2)
 
 # Touchscreen calibration
 def touchscreen_calibration():
-    os.system("usr/bin/xinput_calibrator | tail -6 > /etc/X11/xorg.conf.d/99-calibration.conf")
+    os.system("/usr/bin/xinput_calibrator | tail -6 > /etc/X11/xorg.conf.d/99-calibration.conf")
 
 
 screen_calib = ttk.Button(settings, text="Calibrate screen", command=touchscreen_calibration)
 screen_calib.grid(column=2, row=0)
+
+# Change streaming platform-----------------------------------------------------------------------------
+
+def change_platform():
+    global platform
+    if platform.get() == 1:
+        platform = IntVar(value=0)
+        platform_name = ' Facebook '
+    elif platform.get() == 0:
+        platform = IntVar(value=1)
+        platform_name = ' YouTube '
+    #print(platform)
+    current_platform = ttk.Label(settings, text=platform_name)
+    current_platform.grid(row=9, column = 1)
+
+platform_label = ttk.Label(settings, text='Streaming Platform:')
+platform_label.grid(row=9, column = 0)
+platform_btn = ttk.Button(settings, text='Change Platform', command=change_platform)
+platform_btn.grid(row=9, column = 2)
+
+if platform.get() == 0:
+    platform_name = ' Facebook '
+elif platform.get() == 1:
+    platform_name = ' YouTube '
+current_platform = ttk.Label(settings, text=platform_name)
+current_platform.grid(row=9, column = 1)
 
 # Stream display--------------------------------------------------------------------------------------------------------
 
@@ -488,21 +567,37 @@ stream.grid_rowconfigure((1, 2), weight=3)
 stream.grid_columnconfigure((0, 1, 2, 3, 4), weight=1)
 stream.grid_rowconfigure(1, weight=4)
 
+camera_stream = function_maker(StreamSetting.STREAM_CAMERA_COMMAND, frame_rate.get(), bit_rate.get(), delay_value.get(), code_dic[current_codetext], platform.get(), 1)
 def start_camera_stream():
-    vs.stop_stream()
-    cap.release()
-    threading.Thread(target = StreamSetting.STREAM_CAMERA_COMMAND).start()
+    global camera_stream_indicator 
+    camera_stream_indicator = 1
+    vs.stop_view()
+    threading.Thread(target = camera_stream).start()
 
+screen_stream = function_maker(StreamSetting.STREAM_SCREEN_COMMAND, frame_rate.get(), bit_rate.get(), delay_value.get(), code_dic[current_codetext], platform.get(), 1)
 def start_screen_stream():
-    threading.Thread(target = StreamSetting.STREAM_SCREEN_COMMAND).start()
+    global screen_stream_indicator 
+    screen_stream_indicator = 1
+    threading.Thread(target = screen_stream).start()
 
+def stop_stream():
+    global stock, stock_height, stock_width, camera_stream_indicator, screen_stream_indicator
+    if camera_stream_indicator == 1:
+        StreamSetting.STOP()
+        vs.start_view()
+        vs.cap_set(stock, stock_height, stock_width)
+        camera_stream_indicator = 0
+    elif screen_stream_indicator == 1:
+        StreamSetting.STOP_SCREEN()
+        screen_stream_indicator = 0
+    
 # Go button
 StreamButtons = Frame(stream)
 stream_btn = ttk.Button(StreamButtons, text='HQ Stream', command=start_camera_stream)
 stream_btn.grid(column=0, row=0)
 stream_btn = ttk.Button(StreamButtons, text='LQ Stream', command=start_screen_stream)
 stream_btn.grid(column=0, row=1)
-stream_btn = ttk.Button(StreamButtons, text='Stop', command=StreamSetting.STOP)
+stream_btn = ttk.Button(StreamButtons, text='Stop', command=stop_stream)
 stream_btn.grid(column=0, row=2)
 StreamButtons.grid(column=4, row=3, rowspan = 2)
 
@@ -553,7 +648,7 @@ customise_names = [['Reset', vs.make_normal, 'Reset'], ['Make Grey', vs.make_gre
                        , 'Rotate'], ['Zoom in', vs.make_zoom_in, 'Zoom/Pan'],
                    ['Zoom out', vs.make_zoom_out, 'Zoom/Pan'], [leftarrowrender, vs.make_pan_left, 'Zoom/Pan'],
                    [rightarrowrender, vs.make_pan_right, 'Zoom/Pan'], [uparrowrender, vs.make_pan_up, 'Zoom/Pan'],
-                   [downarrowrender, vs.make_pan_down, 'Zoom/Pan'], ['Emboss', vs.make_emboss, 'Effects'],
+                   [downarrowrender, vs.make_pan_down, 'Zoom/Pan'],
                    ['Outline', vs.make_edge_detection, 'Effects'], ['Sepia', vs.make_sepia, 'Colour'],
                    ['Face Detection', vs.detect_face, 'Effects'], ['Motion Tracker', vs.motion_tracker, 'Effects']]
 
@@ -599,13 +694,9 @@ video_customise.grid(column=4, row=0)
 # displaying preview of stream
 
 # 400 for big, 300 for small
-stock_height = 250
-stock_width = int(1.33333 * stock_height)
-
-stock = Label(stream, bg=style.lookup('TFrame', 'background'))
 stock.grid(column=0, row=0, columnspan=3, rowspan=3, sticky='nw')
 
-vs.show_frame(stock, stock_height, stock_width, cap)
+vs.cap_set(stock, stock_height, stock_width)
 # Tutorial section
 
 rick_roll = ttk.Label(tutorial, text="""Guide to using this touchscreen explaining what a stream key 
