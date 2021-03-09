@@ -9,7 +9,7 @@ import pickle
 import os
 import threading
 import cv2
-import StreamSetting
+#import StreamSetting
 
 # See README for information about this
 
@@ -136,8 +136,8 @@ app.geometry('480x320')
 style = ThemedStyle(app)
 style.set_theme("equilux")
 
-style.configure('W.TButton', foreground='green')
-style.configure('B.TButton', foreground='red')
+style.configure('W.TButton', foreground='green', weight='bold')
+style.configure('B.TButton', foreground='red', weight='bold')
 
 # background colour from theme equilux
 bg = style.lookup('TFrame', 'background')
@@ -428,10 +428,18 @@ def clear_code():
 # Program to select new stream code from existing ones
 
 def change_code():
-    global existing_codes, screen_stream, camera_stream
+    global existing_codes, screen_stream, camera_stream, code_list, code_dic
 
     chosen_code = value.get()
     current_code['text'] = chosen_code
+
+    code_list.insert(0, chosen_code)
+    codedic_list = [code_list, code_dic]
+    # adds the new key to a file
+    stored_codes1 = open(file_name, 'wb')
+    pickle.dump(codedic_list, stored_codes1)
+    stored_codes1.close()
+
     screen_stream = function_maker(StreamSetting.STREAM_SCREEN_COMMAND, frame_rate.get(), bit_rate.get(),
     delay_value.get(), code_dic[current_code['text']], platform.get(), 1)
     camera_stream = function_maker(StreamSetting.STREAM_CAMERA_COMMAND, frame_rate.get(), bit_rate.get(),
