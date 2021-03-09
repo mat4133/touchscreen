@@ -4,7 +4,7 @@ from PIL import Image, ImageTk
 from ttkthemes import ThemedStyle
 from Keyboard import create_keyboard, keyboard_on, function_maker
 import Wifi_file as wf
-import VideoSetting_uptodate as vs
+import VideoSetting as vs
 import pickle
 import os
 import threading
@@ -206,13 +206,12 @@ print('Saved_networks:', saved_networks)
 
 counter = 0
 connected = False
-'''
+
 while (counter < len(saved_networks) and connected == False):
     counter += 1
     connected = wf.save_conf(saved_networks[counter-1],0)
-
 counter = 0
-'''
+
 saved_networks = []
 wifi_login.grid_rowconfigure((0, 1, 2, 3, 4), weight=1)
 wifi_login.grid_columnconfigure((0, 1), weight=1)
@@ -538,7 +537,7 @@ BckLbl = ttk.Label(settings, text='')
 BckLbl.grid(column=1, row=5, columnspan=2)
 
 # initial value
-delay = ttk.Spinbox(settings, from_=-5000, to=5000, increment=20, textvariable=delay_value)
+delay = ttk.Spinbox(settings, from_=-50, to=50, increment=0.1, textvariable=delay_value)
 delay.grid(column=1, row=5, columnspan=2)
 
 frame_rate_label = ttk.Label(settings, text='Frame Rate:')
@@ -547,7 +546,7 @@ frame_rate_scroller.grid(column=1, row=6, columnspan=2)
 frame_rate_label.grid(column=0, row=6)
 
 bit_rate_label = ttk.Label(settings, text='Bit Rate: ')
-bit_rate_scroller = ttk.Spinbox(settings, from_=0, to=100, textvariable=bit_rate)
+bit_rate_scroller = ttk.Spinbox(settings, from_=0, to=6000000, increment=50000, textvariable=bit_rate)
 bit_rate_label.grid(column=0, row=7)
 bit_rate_scroller.grid(column=1, row=7, columnspan=2)
 
@@ -598,28 +597,33 @@ stream.grid_rowconfigure((1, 2), weight=3)
 stream.grid_columnconfigure((0, 1, 2, 3, 4), weight=1)
 stream.grid_rowconfigure(1, weight=4)
 
+def start_camera_stream_command():
+    camera_stream = function_maker(StreamSetting.STREAM_CAMERA_COMMAND, frame_rate.get(), bit_rate.get(), delay_value.get(), code_dic[current_code['text']], platform.get(), chk_state.get())
+    return camera_stream
 
-camera_stream = function_maker(StreamSetting.STREAM_CAMERA_COMMAND, frame_rate.get(), bit_rate.get(), delay_value.get(), code_dic[current_code['text']], platform.get(), 1)
 def start_camera_stream():
     global camera_stream_indicator, stream_btn, stream_btn1
+    camera_stream = start_camera_stream_command()
     stream_btn.configure(text='Streaming', command=None)
     stream_btn1.configure(text='Streaming', command=None)
     camera_stream_indicator = 1
     vs.stop_view()
-    # threading.Thread(target = camera_stream).start()
+    threading.Thread(target = camera_stream).start()
 
-
-screen_stream = function_maker(StreamSetting.STREAM_SCREEN_COMMAND, frame_rate.get(), bit_rate.get(), delay_value.get(), code_dic[current_code['text']], platform.get(), 1)
+def start_screen_stream_command():
+    screen_stream = function_maker(StreamSetting.STREAM_SCREEN_COMMAND, frame_rate.get(), bit_rate.get(), delay_value.get(), code_dic[current_code['text']], platform.get(), chk_state.get())
+    return screen_stream
 
 def start_screen_stream():
     global screen_stream_indicator, stream_btn, stream_btn1
     screen_stream_indicator = 1
+    screen_stream = start_screen_stream_command()
     note.tab(1, state='disabled')
     note.tab(2, state='disabled')
     note.tab(3, state='disabled')
     stream_btn.configure(text='Streaming', command=None)
     stream_btn1.configure(text='Streaming', command=None)
-    # threading.Thread(target = screen_stream).start()
+    threading.Thread(target = screen_stream).start()
 
 
 def stop_stream():
