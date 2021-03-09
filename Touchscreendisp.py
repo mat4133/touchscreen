@@ -4,7 +4,7 @@ from PIL import Image, ImageTk
 from ttkthemes import ThemedStyle
 from Keyboard import create_keyboard, keyboard_on, function_maker
 import Wifi_file as wf
-import VideoSetting as vs
+import VideoSetting_uptodate as vs
 import pickle
 import os
 import threading
@@ -18,6 +18,7 @@ audio_connection = 0
 video_connection = 0
 camera_stream_indicator = 0
 screen_stream_indicator = 0
+
 
 class Customise_button(ttk.Button):
     def __init__(self, parent, text, command):
@@ -36,6 +37,7 @@ class Customise_button(ttk.Button):
 
     def __repr__(self):
         return (self.name)
+
 
 class Customise_window():
     def __init__(self, name):
@@ -68,13 +70,14 @@ class Customise_window():
             self.button_list[3].grid(column=1, row=3, rowspan=2)
             self.button_list[4].grid(column=4, row=1)
             self.button_list[5].grid(column=4, row=2)
-    
+
     def close_window(self):
         for i in self.button_list:
             i.grid_forget()
 
     def __repr__(self):
         return self.button_list.__repr__()
+
 
 # Functions for resetting back to the default settings
 def set_defaults():
@@ -98,21 +101,27 @@ def inital_settings():
         previous_settings.close()
     except:
         set_defaults()
-        chk_state = IntVar(value = False)
-        bit_rate = DoubleVar(value = 6000000)
-        frame_rate = DoubleVar(value = 30)
-        delay_value = DoubleVar(value = 0)
+        chk_state = IntVar(value=False)
+        bit_rate = DoubleVar(value=6000000)
+        frame_rate = DoubleVar(value=30)
+        delay_value = DoubleVar(value=0)
         platform = IntVar(value=0)
+
 
 # Function for updating file every 5 seconds with new settings
 def update_settings(*args):
-    global frame_rate, delay_value, chk_state, bit_rate, platform
+    global frame_rate, delay_value, chk_state, bit_rate, platform, screen_stream, camera_stream
     settings_dic = {'bit_rate': bit_rate.get(), 'frame_rate': frame_rate.get(), 'audioless': chk_state.get(),
                     'audio_delay': delay_value.get(), 'platform': platform.get()}
     settings_file = open('settings_file', 'wb')
     pickle.dump(settings_dic, settings_file)
     settings_file.close()
-    threading.Timer(5, update_settings).start()
+    # screen_stream = function_maker(StreamSetting.STREAM_SCREEN_COMMAND, frame_rate.get(), bit_rate.get(),
+    # delay_value.get(), code_dic[current_code['text']], platform.get(), 1)
+    # camera_stream = function_maker(StreamSetting.STREAM_CAMERA_COMMAND, frame_rate.get(), bit_rate.get(),
+    # delay_value.get(), code_dic[current_code['text']], platform.get(), 1)
+    threading.Timer(2, update_settings).start()
+
 
 app = Tk()
 
@@ -160,7 +169,6 @@ note.add(settings2, text="SETTINGS")
 note.add(wifi_login, text="WIFI")
 note.add(tutorial, text="TUTORIAL")
 
-
 # Settings display------------------------------------------------------------------------------------------------------
 
 # Configuring grid layout for settings window
@@ -189,9 +197,9 @@ def password_keyboard_off(current_frame):
     password_entr.grid(column=1, row=2)
     password_lbl.grid(column=0, row=2)
     connect_btn.grid(columnspan=2, row=3)
+    toggle_btn.grid_forget()
     keyboard_frame3.grid_forget()
-    # username_entr.grid(column=1, row=2)
-    # username_lbl.grid(column=0, row=2)
+
 
 saved_networks = wf.save_get()
 print('Saved_networks:', saved_networks)
@@ -231,13 +239,15 @@ def password_filler(*args):
             password_text.set(networks.password)
             saved = 1
     for networks in search_list:
-        #print(type(networks.SSID), type(args[0].SSID))
+        # print(type(networks.SSID), type(args[0].SSID))
         if networks.SSID == args[0].SSID:
             candidate_network = networks
     if saved == 0:
         password_text.set('')
 
+
 candidate_network = 'none'
+
 
 def connect():
     global candidate_network
@@ -255,10 +265,10 @@ def connect():
         wf.dump()
     except:
         print("No Network Detected")
-    
+
 
 search_list = wf.scan()
-#search_list = ['list of networks', 'Glide0028763-5G', 'Glide0028763-2G']
+# search_list = ['list of networks', 'Glide0028763-5G', 'Glide0028763-2G']
 
 option_menu_list = []
 for networks in search_list:
@@ -271,6 +281,7 @@ search_networks.grid(column=1, row=1)
 password_lbl = ttk.Label(wifi_login, text='PASSWORD:')
 password_lbl.grid(column=0, row=2)
 
+
 def toggle_password():
     if password_entr.cget('show') == '':
         password_entr.config(show='*')
@@ -278,6 +289,7 @@ def toggle_password():
     else:
         password_entr.config(show='')
         toggle_btn.config(text='Hide Password')
+
 
 password_text = StringVar()
 password_entr = ttk.Entry(wifi_login, show='*', textvariable=password_text)
@@ -299,28 +311,30 @@ keyboard_frame3 = create_keyboard(keyboard_frame3, password_entr, password_text,
 
 # Settings frame--------------------------------------------------------------------------------------
 
-#Adding scrollbar to frame-----------------------------------
+# Adding scrollbar to frame-----------------------------------
 
-canvas = Canvas(settings2, borderwidth=0, highlightthickness=0, bd=0, bg = style.lookup('TFrame', 'background'))
-canvas.pack(side=LEFT, fill=BOTH, expand = True)
+canvas = Canvas(settings2, borderwidth=0, highlightthickness=0, bd=0, bg=style.lookup('TFrame', 'background'))
+canvas.pack(side=LEFT, fill=BOTH, expand=True)
 
 scroll = ttk.Scrollbar(settings2, orient='vertical', command=canvas.yview)
 scroll.pack(side=RIGHT, fill=Y, expand='false')
 scroll.config(command=canvas.yview)
 
-canvas.config(yscrollcommand=scroll.set, scrollregion=(0,0,0,600))
+canvas.config(yscrollcommand=scroll.set, scrollregion=(0, 0, 0, 600))
 canvas.pack(fill=BOTH, side=LEFT, expand=TRUE)
 
 # reset the view
 canvas.xview_moveto(0)
 canvas.yview_moveto(0)
 
-#create frame inside canvas
+# create frame inside canvas
 
 settings = ttk.Frame(canvas)
 settings.pack()
-settings_id = canvas.create_window(50,0, window = settings, anchor=NW)
-#settings.config(width=466)
+settings_id = canvas.create_window(50, 0, window=settings, anchor=NW)
+
+
+# settings.config(width=466)
 
 
 def _configure_interior(event):
@@ -330,23 +344,21 @@ def _configure_interior(event):
     if settings.winfo_reqwidth() != canvas.winfo_width():
         # update the canvas's width to fit the inner frame
         canvas.config(width=settings.winfo_reqwidth())
+
+
 settings.bind('<Configure>', _configure_interior)
+
 
 def _configure_canvas(event):
     settings.configure(width=canvas.winfo_width())
     if settings.winfo_reqwidth() != canvas.winfo_width():
         # update the inner frame's width to fill the canvas
         canvas.itemconfigure(settings_id, width=canvas.winfo_width())
+
+
 canvas.bind('<Configure>', _configure_canvas)
 
-
-
 # importing default settings -------------------------------------------------------------------------
-
-if starting == 0:
-    inital_settings()
-    update_settings()
-    starting = 1
 
 # code for saving and importing streams
 
@@ -359,9 +371,10 @@ code_list = codedic_list[0]
 code_dic = codedic_list[1]
 stored_codes2.close()
 
+
 # code for entering a new key
 def enter_code():
-    global code_list, code_dic
+    global code_list, code_dic, screen_stream, camera_stream
     input_code = stream_code.get()
     actual_code = input_code
     # checks if this is the first key entered and if so deletes the '' that was in it's place
@@ -387,6 +400,10 @@ def enter_code():
 
     # adds the new key to the list of keys
     value.set(input_code)
+    screen_stream = function_maker(StreamSetting.STREAM_SCREEN_COMMAND, frame_rate.get(), bit_rate.get(),
+    delay_value.get(), code_dic[current_code['text']], platform.get(), 1)
+    camera_stream = function_maker(StreamSetting.STREAM_CAMERA_COMMAND, frame_rate.get(), bit_rate.get(),
+    delay_value.get(), code_dic[current_code['text']], platform.get(), 1)
     existing_codes['menu'].add_command(label=input_code, command=_setit(value, input_code))
 
 
@@ -412,10 +429,14 @@ def clear_code():
 # Program to select new stream code from existing ones
 
 def change_code():
-    global existing_codes
+    global existing_codes, screen_stream, camera_stream
 
     chosen_code = value.get()
     current_code['text'] = chosen_code
+    screen_stream = function_maker(StreamSetting.STREAM_SCREEN_COMMAND, frame_rate.get(), bit_rate.get(),
+    delay_value.get(), code_dic[current_code['text']], platform.get(), 1)
+    camera_stream = function_maker(StreamSetting.STREAM_CAMERA_COMMAND, frame_rate.get(), bit_rate.get(),
+    delay_value.get(), code_dic[current_code['text']], platform.get(), 1)
 
 
 # check to make see if this is the first time (check list in file is not empty, if empty have none come up)
@@ -427,6 +448,12 @@ stream_label = ttk.Label(settings, text='Current stream key:')
 stream_label.grid(column=0, row=0)
 current_code = ttk.Label(settings, text=current_codetext)
 current_code.grid(column=1, row=0)
+
+# thing to start settings updator
+if starting == 0:
+    inital_settings()
+    update_settings()
+    starting = 1
 
 
 # function to clear space for keyboard
@@ -536,6 +563,7 @@ def touchscreen_calibration():
 screen_calib = ttk.Button(settings, text="Calibrate screen", command=touchscreen_calibration)
 screen_calib.grid(column=2, row=0)
 
+
 # Change streaming platform-----------------------------------------------------------------------------
 
 def change_platform():
@@ -546,21 +574,22 @@ def change_platform():
     elif platform.get() == 0:
         platform = IntVar(value=1)
         platform_name = ' YouTube '
-    #print(platform)
+    # print(platform)
     current_platform = ttk.Label(settings, text=platform_name)
-    current_platform.grid(row=9, column = 1)
+    current_platform.grid(row=9, column=1)
+
 
 platform_label = ttk.Label(settings, text='Streaming Platform:')
-platform_label.grid(row=9, column = 0)
+platform_label.grid(row=9, column=0)
 platform_btn = ttk.Button(settings, text='Change Platform', command=change_platform)
-platform_btn.grid(row=9, column = 2)
+platform_btn.grid(row=9, column=2)
 
 if platform.get() == 0:
     platform_name = ' Facebook '
 elif platform.get() == 1:
     platform_name = ' YouTube '
 current_platform = ttk.Label(settings, text=platform_name)
-current_platform.grid(row=9, column = 1)
+current_platform.grid(row=9, column=1)
 
 # Stream display--------------------------------------------------------------------------------------------------------
 
@@ -569,18 +598,29 @@ stream.grid_rowconfigure((1, 2), weight=3)
 stream.grid_columnconfigure((0, 1, 2, 3, 4), weight=1)
 stream.grid_rowconfigure(1, weight=4)
 
-camera_stream = function_maker(StreamSetting.STREAM_CAMERA_COMMAND, frame_rate.get(), bit_rate.get(), delay_value.get(), code_dic[value.get()], platform.get(), 1)
+
+camera_stream = function_maker(StreamSetting.STREAM_CAMERA_COMMAND, frame_rate.get(), bit_rate.get(), delay_value.get(), code_dic[current_code['text']], platform.get(), 1)
 def start_camera_stream():
-    global camera_stream_indicator 
+    global camera_stream_indicator, stream_btn, stream_btn1
+    stream_btn.configure(text='Streaming', command=None)
+    stream_btn1.configure(text='Streaming', command=None)
     camera_stream_indicator = 1
     vs.stop_view()
-    threading.Thread(target = camera_stream).start()
+    # threading.Thread(target = camera_stream).start()
 
-screen_stream = function_maker(StreamSetting.STREAM_SCREEN_COMMAND, frame_rate.get(), bit_rate.get(), delay_value.get(), code_dic[value.get()], platform.get(), 1)
+
+screen_stream = function_maker(StreamSetting.STREAM_SCREEN_COMMAND, frame_rate.get(), bit_rate.get(), delay_value.get(), code_dic[current_code['text']], platform.get(), 1)
+
 def start_screen_stream():
-    global screen_stream_indicator 
+    global screen_stream_indicator, stream_btn, stream_btn1
     screen_stream_indicator = 1
-    threading.Thread(target = screen_stream).start()
+    note.tab(1, state='disabled')
+    note.tab(2, state='disabled')
+    note.tab(3, state='disabled')
+    stream_btn.configure(text='Streaming', command=None)
+    stream_btn1.configure(text='Streaming', command=None)
+    # threading.Thread(target = screen_stream).start()
+
 
 def stop_stream():
     global stock, stock_height, stock_width, camera_stream_indicator, screen_stream_indicator
@@ -589,20 +629,27 @@ def stop_stream():
         vs.start_view()
         vs.cap_set(stock, stock_height, stock_width)
         camera_stream_indicator = 0
+        stream_btn.configure(text='HQ Stream', command=start_camera_stream)
+        stream_btn1.configure(text='LQ Stream', command=start_screen_stream)
     elif screen_stream_indicator == 1:
+        note.tab(1, state='normal')
+        note.tab(2, state='normal')
+        note.tab(3, state='normal')
+        stream_btn.configure(text='HQ Stream', command=start_camera_stream)
+        stream_btn1.configure(text='LQ Stream', command=start_screen_stream)
         StreamSetting.STOP_SCREEN()
         screen_stream_indicator = 0
-    
+
+
 # Go button
 StreamButtons = Frame(stream)
 stream_btn = ttk.Button(StreamButtons, text='HQ Stream', command=start_camera_stream)
 stream_btn.grid(column=0, row=0)
-stream_btn = ttk.Button(StreamButtons, text='LQ Stream', command=start_screen_stream)
-stream_btn.grid(column=0, row=1)
-stream_btn = ttk.Button(StreamButtons, text='Stop', command=stop_stream)
-stream_btn.grid(column=0, row=2)
-StreamButtons.grid(column=4, row=3, rowspan = 2)
-
+stream_btn1 = ttk.Button(StreamButtons, text='LQ Stream', command=start_screen_stream)
+stream_btn1.grid(column=0, row=1)
+stream_btn2 = ttk.Button(StreamButtons, text='Stop', command=stop_stream)
+stream_btn2.grid(column=0, row=2)
+StreamButtons.grid(column=4, row=3, rowspan=2)
 
 # Button to select between video options
 
@@ -629,15 +676,16 @@ downarrowrender = ImageTk.PhotoImage(downarrow)
 
 leftarrow = Image.open(
     #'\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\LeftArrow.png')
-    "/home/pi/touchscreen-main/Touchscreen_photos/LeftArrow.png")  # needs to be
+     "/home/pi/touchscreen-main/Touchscreen_photos/LeftArrow.png")  # needs to be
 # whatever your directory is
 left_per = (arrow_height / float(leftarrow.size[0]))
 height = int((float(leftarrow.size[1]) * float(left_per)))
 leftarrow = leftarrow.resize((arrow_height, height))
 leftarrowrender = ImageTk.PhotoImage(leftarrow)
 
-rightarrow = Image.open("/home/pi/touchscreen-main/Touchscreen_photos/RightArrow.png")
-    #'\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\RightArrow.png'  # needs to be
+rightarrow = Image.open(
+    "/home/pi/touchscreen-main/Touchscreen_photos/RightArrow.png")
+    #'\\Users\\Matthew Scholar\\PycharmProjects\\touchscreen-main\\Touchscreen_photos\\RightArrow.png')  # needs to be
 # whatever your directory is
 right_per = (arrow_height / float(rightarrow.size[0]))
 rightarrow = rightarrow.resize((arrow_height, height))
@@ -654,7 +702,7 @@ customise_names = [['Reset', vs.make_normal, 'Reset'], ['Make Grey', vs.make_gre
                    [downarrowrender, vs.make_pan_down, 'Zoom/Pan'],
                    ['Outline', vs.make_edge_detection, 'Effects'], ['Sepia', vs.make_sepia, 'Colour'],
                    ['Face Detection', vs.detect_face, 'Effects'], ['Motion Tracker', vs.motion_tracker, 'Effects'],
-                    ['Autofocus', vs.auto_focus, 'Effects'], ['LQ stream start', start_screen_stream, 'Start'],
+                   ['Autofocus', vs.auto_focus, 'Effects'], ['LQ stream start', start_screen_stream, 'Start'],
                    ['HQ stream start', start_camera_stream, 'Start'], ['Stop', stop_stream, 'Start']]
 
 windows_names = ['Reset', 'Colour', 'Properties', 'Rotate', 'Zoom/Pan', 'Effects', 'Start']
@@ -670,7 +718,7 @@ for i in range(len(windows)):
         windows[i].add_button(j)
 
 windows_dic = {'Reset': windows[0], 'Colour': windows[1], 'Properties': windows[2], 'Rotate': windows[3],
-               'Zoom/Pan': windows[4], 'Effects': windows[5], 'Start':windows[6]}
+               'Zoom/Pan': windows[4], 'Effects': windows[5], 'Start': windows[6]}
 
 current_window = windows_dic['Start']
 current_window.create_window()
