@@ -123,6 +123,33 @@ def update_settings(*args):
     threading.Timer(2, update_settings).start()
 
 
+#funtion to check which format stream code is in and whether that is correct
+def stream_code_checker(stream_code):
+    not_youtube = 0
+    not_facebook = 0
+    for i in range(len(stream_code)):
+        if (i-4)%5 == 0:
+            if stream_code[i] != '-':
+                not_youtube += 1
+        else:
+            if stream_code[i] not in 'abcdefghijklmnopqrstuvwxyz0123456789':
+                not_youtube += 1
+    if len(stream_code) != 24:
+        not_youtube += 1
+    if ('?s_bl=1&s_ps' not in stream_code) or ('=api-s&a=' not in stream_code):
+        not_facebook += 1
+    if len(stream_code) != 75 and len(stream_code) != 90:
+        not_facebook += 1
+    if not_youtube > 0 and not_facebook > 0:
+        return 'None'
+    elif not_facebook > 0:
+        return 'Youtube'
+    elif not_youtube > 0:
+        return 'Facebook'
+    else:
+        return 'Both'
+
+
 app = Tk()
 
 app.title('Streaming on a prayer')
@@ -399,11 +426,11 @@ def enter_code():
 
     # adds the new key to the list of keys
     value.set(input_code)
-    screen_stream = function_maker(StreamSetting.STREAM_SCREEN_COMMAND, frame_rate.get(), bit_rate.get(),
-    delay_value.get(), code_dic[current_code['text']], platform.get(), 1)
-    camera_stream = function_maker(StreamSetting.STREAM_CAMERA_COMMAND, frame_rate.get(), bit_rate.get(),
-    delay_value.get(), code_dic[current_code['text']], platform.get(), 1)
-    existing_codes['menu'].add_command(label=input_code, command=_setit(value, input_code))
+    #screen_stream = function_maker(StreamSetting.STREAM_SCREEN_COMMAND, frame_rate.get(), bit_rate.get(),
+    #delay_value.get(), code_dic[current_code['text']], platform.get(), 1)
+    #camera_stream = function_maker(StreamSetting.STREAM_CAMERA_COMMAND, frame_rate.get(), bit_rate.get(),
+    #delay_value.get(), code_dic[current_code['text']], platform.get(), 1)
+    #existing_codes['menu'].add_command(label=input_code, command=_setit(value, input_code))
 
 
 # Program to clear stream keys from memory+screen
@@ -440,10 +467,10 @@ def change_code():
     pickle.dump(codedic_list, stored_codes1)
     stored_codes1.close()
 
-    screen_stream = function_maker(StreamSetting.STREAM_SCREEN_COMMAND, frame_rate.get(), bit_rate.get(),
-    delay_value.get(), code_dic[current_code['text']], platform.get(), 1)
-    camera_stream = function_maker(StreamSetting.STREAM_CAMERA_COMMAND, frame_rate.get(), bit_rate.get(),
-    delay_value.get(), code_dic[current_code['text']], platform.get(), 1)
+    #screen_stream = function_maker(StreamSetting.STREAM_SCREEN_COMMAND, frame_rate.get(), bit_rate.get(),
+    #delay_value.get(), code_dic[current_code['text']], platform.get(), 1)
+    #camera_stream = function_maker(StreamSetting.STREAM_CAMERA_COMMAND, frame_rate.get(), bit_rate.get(),
+    #delay_value.get(), code_dic[current_code['text']], platform.get(), 1)
 
 
 # check to make see if this is the first time (check list in file is not empty, if empty have none come up)
@@ -606,38 +633,52 @@ stream.grid_columnconfigure((0, 1, 2, 3, 4), weight=1)
 stream.grid_rowconfigure(1, weight=4)
 
 def start_camera_stream_command():
-    camera_stream = function_maker(StreamSetting.STREAM_CAMERA_COMMAND, frame_rate.get(), bit_rate.get(), delay_value.get(), code_dic[current_code['text']], platform.get(), chk_state.get())
+    #camera_stream = function_maker(StreamSetting.STREAM_CAMERA_COMMAND, frame_rate.get(), bit_rate.get(), delay_value.get(), code_dic[current_code['text']], platform.get(), chk_state.get())
     return camera_stream
 
 def start_camera_stream():
     global camera_stream_indicator, stream_btn, stream_btn1
-    camera_stream = start_camera_stream_command()
-    stream_btn.configure(text='Streaming', command=None)
-    stream_btn1.configure(text='Streaming', command=None)
-    camera_stream_indicator = 1
-    vs.stop_view()
-    threading.Thread(target = camera_stream).start()
+    if platform.get() == 1 and stream_code_checker(code_dic[current_code['text']]) == 'Facebook':
+        messagebox.showerror('Stream code is formatted for Facebook and you are trying to stream to Youtube. Change either stream key or platform in settings')
+    elif platform.get() == 0 and stream_code_checker(code_dic[current_code['text']]) == 'Youtube':
+        messagebox.showerror('Stream code is formatted for Youtube and you are trying to stream to Facebook. Change either stream key or platform in settings')
+    elif stream_code_checker(code_dic[current_code['text']]) == 'None':
+        messagebox.showerror('Stream key is in an invalid format. Check your stream key')
+    else:
+        camera_stream = start_camera_stream_command()
+        stream_btn.configure(text='Streaming', command=None)
+        stream_btn1.configure(text='Streaming', command=None)
+        camera_stream_indicator = 1
+        vs.stop_view()
+        threading.Thread(target = camera_stream).start()
 
 def start_screen_stream_command():
-    screen_stream = function_maker(StreamSetting.STREAM_SCREEN_COMMAND, frame_rate.get(), bit_rate.get(), delay_value.get(), code_dic[current_code['text']], platform.get(), chk_state.get())
+    #screen_stream = function_maker(StreamSetting.STREAM_SCREEN_COMMAND, frame_rate.get(), bit_rate.get(), delay_value.get(), code_dic[current_code['text']], platform.get(), chk_state.get())
     return screen_stream
 
 def start_screen_stream():
     global screen_stream_indicator, stream_btn, stream_btn1
-    screen_stream_indicator = 1
-    screen_stream = start_screen_stream_command()
-    note.tab(1, state='disabled')
-    note.tab(2, state='disabled')
-    note.tab(3, state='disabled')
-    stream_btn.configure(text='Streaming', command=None)
-    stream_btn1.configure(text='Streaming', command=None)
-    threading.Thread(target = screen_stream).start()
+    if platform.get() == 1 and stream_code_checker(code_dic[current_code['text']]) == 'Facebook':
+        messagebox.showerror('Stream code is formatted for Facebook and you are trying to stream to Youtube. Change either stream key or platform in settings')
+    elif platform.get() == 0 and stream_code_checker(code_dic[current_code['text']]) == 'Youtube':
+        messagebox.showerror('Stream code is formatted for Youtube and you are trying to stream to Facebook. Change either stream key or platform in settings')
+    elif stream_code_checker(code_dic[current_code['text']]) == 'None':
+        messagebox.showerror('Stream key is in an invalid format. Check your stream key')
+    else:
+        screen_stream_indicator = 1
+        screen_stream = start_screen_stream_command()
+        note.tab(1, state='disabled')
+        note.tab(2, state='disabled')
+        note.tab(3, state='disabled')
+        stream_btn.configure(text='Streaming', command=None)
+        stream_btn1.configure(text='Streaming', command=None)
+        threading.Thread(target = screen_stream).start()
 
 
 def stop_stream():
     global stock, stock_height, stock_width, camera_stream_indicator, screen_stream_indicator
     if camera_stream_indicator == 1:
-        StreamSetting.STOP()
+        #StreamSetting.STOP()
         vs.start_view()
         vs.cap_set(stock, stock_height, stock_width)
         camera_stream_indicator = 0
@@ -649,7 +690,7 @@ def stop_stream():
         note.tab(3, state='normal')
         stream_btn.configure(text='HQ Stream', command=start_camera_stream)
         stream_btn1.configure(text='LQ Stream', command=start_screen_stream)
-        StreamSetting.STOP_SCREEN()
+        #StreamSetting.STOP_SCREEN()
         screen_stream_indicator = 0
 
 
