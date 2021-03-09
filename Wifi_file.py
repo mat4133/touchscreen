@@ -45,12 +45,12 @@ def scan():
 
 
 def dump(saved_networks):
-    network_file = open('Saved_wifi', 'wb')
+    network_file = open('/home/pi/touchscreen-main/Saved_wifi', 'wb')
     pickle.dump(saved_networks, network_file)
     network_file.close()
 
 def save_get():
-    network_file = open('Saved_wifi', 'rb')
+    network_file = open('/home/pi/touchscreen-main/Saved_wifi', 'rb')
     saved_networks = pickle.load(network_file)
     network_file.close()
     return saved_networks

@@ -361,7 +361,7 @@ canvas.bind('<Configure>', _configure_canvas)
 
 # code for saving and importing streams
 
-file_name = 'stream_codes'
+file_name = '/home/pi/touchscreen-main/stream_codes'
 
 # reading the stream codes from memory
 stored_codes2 = open(file_name, 'rb')
