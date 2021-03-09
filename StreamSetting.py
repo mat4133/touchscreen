@@ -33,7 +33,7 @@ def STREAM_CAMERA_COMMAND(FPS, BITRATE, VIDEOBUFFER, KEY, PLATFORM, AUDIO):
         STREAMURL = 'rtmp://a.rtmp.youtube.com/live2/'
     elif PLATFORM == 0:
         STREAMURL = 'rtmps://live-api-s.facebook.com:443/rtmp/'
-    KEY = "\"" + str(KEY) + "\""
+        KEY = "\"" + str(KEY) + "\""
     print(KEY)
     stream_pipe = subprocess.Popen(
         '/home/pi/FFmpeg-n4.1.3/ffmpeg -use_wallclock_as_timestamps 1 -thread_queue_size 32K -f h264 -r ' + str(FPS) + ' -itsoffset 0 -i - -f alsa -ar 11025 -itsoffset ' + str(VIDEOBUFFER) + ' -ac 1 -thread_queue_size 32K -i pulse -use_wallclock_as_timestamps 1 -vol ' + str(VOLUME) + ' -c:a aac -async 1 -c:v libx264 -preset ultrafast -f flv -r ' + str(FPS) + ' ' + str(STREAMURL) + str(KEY),
@@ -65,6 +65,7 @@ def STREAM_SCREEN_COMMAND(FPS, BITRATE, VIDEOBUFFER, KEY, PLATFORM, AUDIO):
         STREAMURL = 'rtmp://a.rtmp.youtube.com/live2/'
     elif PLATFORM == 0:
         STREAMURL = 'rtmps://live-api-s.facebook.com:443/rtmp/'
+        KEY = "\"" + str(KEY) + "\""
     stream_pipe = subprocess.Popen(
         '/home/pi/FFmpeg-n4.1.3/ffmpeg -use_wallclock_as_timestamps 1 -thread_queue_size 32k -f x11grab -s 330x200 -r ' + str(FPS) + ' -itsoffset 0 -i :0.0+5,35 -f alsa -use_wallclock_as_timestamps 1 -ac 1 -ar 11025 -thread_queue_size 32k -itsoffset ' + str(VIDEOBUFFER) + ' -i pulse -async 1 -c:v libx264 -c:a aac -minrate ' + str(BITRATE) + ' -pix_fmt yuv420p -qp 0 -r ' + str(FPS) + ' -vol ' + str(VOLUME) + ' -f flv "rtmps://live-api-s.facebook.com:443/rtmp/2864819093784274?s_bl=1&s_ps=1&s_psm=1&s_sw=0&s_vt=api-s&a=AbwJJqZ6dMhN7ogc"',# + str(KEY),
         stdin=subprocess.PIPE, shell=True)
