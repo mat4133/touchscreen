@@ -21,7 +21,7 @@ def STOP_SCREEN():
     except:
         print("")
 
-def STREAM_CAMERA_COMMAND(FPS, BITRATE, VIDEOBUFFER, KEY, PLATFORM, AUDIO):
+def STREAM_CAMERA_COMMAND(FPS, VIDEOBUFFER, KEY, PLATFORM, AUDIO):
     global flag
     PiCamera().close()
     camera = picamera.PiCamera(resolution=(1280, 720), framerate=FPS)
@@ -48,20 +48,18 @@ def STREAM_CAMERA_COMMAND(FPS, BITRATE, VIDEOBUFFER, KEY, PLATFORM, AUDIO):
         camera.vflip = True
         camera.hflip = True
         camera.rotation = 90
-        camera.start_recording(stream_pipe.stdin, format='h264', bitrate=int(BITRATE))
+        camera.start_recording(stream_pipe.stdin, format='h264')
         while True:
             if flag == 1:
                 camera.stop_recording()
                 camera.close()
-                stream_pipe.stdin.close()
+                STOP_SCREEN()
                 break
             camera.wait_recording(1)
     flag = 0
-    subprocess.call('pkill -n ffmpeg', shell=True)
-    stream_pipe.wait()
 
 
-def STREAM_SCREEN_COMMAND(FPS, BITRATE, VIDEOBUFFER, KEY, PLATFORM, AUDIO):
+def STREAM_SCREEN_COMMAND(FPS, VIDEOBUFFER, KEY, PLATFORM, AUDIO):
     global flag
     if AUDIO == 1:
         VOLUME = 0
@@ -79,5 +77,5 @@ def STREAM_SCREEN_COMMAND(FPS, BITRATE, VIDEOBUFFER, KEY, PLATFORM, AUDIO):
         BUFFERAUDIO = 0
         BUFFERVIDEO = VIDEOBUFFER
     stream_pipe = subprocess.Popen(
-        '/home/pi/FFmpeg-n4.1.3/ffmpeg -use_wallclock_as_timestamps 1 -thread_queue_size 32k -f x11grab -s 330x200 -r ' + str(FPS) + ' -itsoffset ' + str(BUFFERVIDEO) + ' -i :0.0+5,35 -f alsa -use_wallclock_as_timestamps 1 -ac 1 -ar 11025 -thread_queue_size 32k -itsoffset ' + str(BUFFERAUDIO) + ' -i pulse -async 1 -c:v libx264 -c:a aac -minrate ' + str(BITRATE) + ' -pix_fmt yuv420p -qp 0 -preset ultrafast -r ' + str(FPS) + ' -vol ' + str(VOLUME) + ' -f flv ' + str(STREAMURL) + str(KEY),
+        '/home/pi/FFmpeg-n4.1.3/ffmpeg -use_wallclock_as_timestamps 1 -thread_queue_size 32k -f x11grab -s 330x200 -r ' + str(FPS) + ' -itsoffset ' + str(BUFFERVIDEO) + ' -i :0.0+5,35 -f alsa -use_wallclock_as_timestamps 1 -ac 1 -ar 11025 -thread_queue_size 32k -itsoffset ' + str(BUFFERAUDIO) + ' -i pulse -async 1 -c:v libx264 -c:a aac -pix_fmt yuv420p -qp 0 -preset ultrafast -r ' + str(FPS) + ' -vol ' + str(VOLUME) + ' -f flv ' + str(STREAMURL) + str(KEY),
         stdin=subprocess.PIPE, shell=True)

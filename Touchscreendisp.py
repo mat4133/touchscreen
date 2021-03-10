@@ -633,7 +633,7 @@ stream.grid_columnconfigure((0, 1, 2, 3, 4), weight=1)
 stream.grid_rowconfigure(1, weight=4)
 
 def start_camera_stream_command():
-    camera_stream = function_maker(StreamSetting.STREAM_CAMERA_COMMAND, frame_rate.get(), bit_rate.get(), delay_value.get(), code_dic[current_code['text']], platform.get(), chk_state.get())
+    camera_stream = function_maker(StreamSetting.STREAM_CAMERA_COMMAND, frame_rate.get(), delay_value.get(), code_dic[current_code['text']], platform.get(), chk_state.get())
     return camera_stream
 
 def start_camera_stream():
@@ -653,7 +653,7 @@ def start_camera_stream():
         threading.Thread(target = camera_stream).start()
 
 def start_screen_stream_command():
-    screen_stream = function_maker(StreamSetting.STREAM_SCREEN_COMMAND, frame_rate.get(), bit_rate.get(), delay_value.get(), code_dic[current_code['text']], platform.get(), chk_state.get())
+    screen_stream = function_maker(StreamSetting.STREAM_SCREEN_COMMAND, frame_rate.get(), delay_value.get(), code_dic[current_code['text']], platform.get(), chk_state.get())
     return screen_stream
 
 def start_screen_stream():
