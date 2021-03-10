@@ -9,7 +9,7 @@ import pickle
 import os
 import threading
 import cv2
-#import StreamSetting
+import StreamSetting
 
 # See README for information about this
 
@@ -81,7 +81,7 @@ class Customise_window():
 
 # Functions for resetting back to the default settings
 def set_defaults():
-    settings_file = open('settings_file', 'wb')
+    settings_file = open('/home/pi/touchscreen-main/settings_file', 'wb')
     settings_dic = {'bit_rate': 6000000, 'frame_rate': 30, 'audioless': False, 'audio_delay': 0, 'platform': 0}
     pickle.dump(settings_dic, settings_file)
     settings_file.close()
@@ -113,7 +113,7 @@ def update_settings(*args):
     global frame_rate, delay_value, chk_state, bit_rate, platform, screen_stream, camera_stream
     settings_dic = {'bit_rate': bit_rate.get(), 'frame_rate': frame_rate.get(), 'audioless': chk_state.get(),
                     'audio_delay': delay_value.get(), 'platform': platform.get()}
-    settings_file = open('settings_file', 'wb')
+    settings_file = open('/home/pi/touchscreen-main/settings_file', 'wb')
     pickle.dump(settings_dic, settings_file)
     settings_file.close()
     # screen_stream = function_maker(StreamSetting.STREAM_SCREEN_COMMAND, frame_rate.get(), bit_rate.get(),
@@ -633,7 +633,7 @@ stream.grid_columnconfigure((0, 1, 2, 3, 4), weight=1)
 stream.grid_rowconfigure(1, weight=4)
 
 def start_camera_stream_command():
-    #camera_stream = function_maker(StreamSetting.STREAM_CAMERA_COMMAND, frame_rate.get(), bit_rate.get(), delay_value.get(), code_dic[current_code['text']], platform.get(), chk_state.get())
+    camera_stream = function_maker(StreamSetting.STREAM_CAMERA_COMMAND, frame_rate.get(), bit_rate.get(), delay_value.get(), code_dic[current_code['text']], platform.get(), chk_state.get())
     return camera_stream
 
 def start_camera_stream():
@@ -653,7 +653,7 @@ def start_camera_stream():
         threading.Thread(target = camera_stream).start()
 
 def start_screen_stream_command():
-    #screen_stream = function_maker(StreamSetting.STREAM_SCREEN_COMMAND, frame_rate.get(), bit_rate.get(), delay_value.get(), code_dic[current_code['text']], platform.get(), chk_state.get())
+    screen_stream = function_maker(StreamSetting.STREAM_SCREEN_COMMAND, frame_rate.get(), bit_rate.get(), delay_value.get(), code_dic[current_code['text']], platform.get(), chk_state.get())
     return screen_stream
 
 def start_screen_stream():
@@ -678,7 +678,7 @@ def start_screen_stream():
 def stop_stream():
     global stock, stock_height, stock_width, camera_stream_indicator, screen_stream_indicator
     if camera_stream_indicator == 1:
-        #StreamSetting.STOP()
+        StreamSetting.STOP()
         vs.start_view()
         vs.cap_set(stock, stock_height, stock_width)
         camera_stream_indicator = 0
@@ -690,7 +690,7 @@ def stop_stream():
         note.tab(3, state='normal')
         stream_btn.configure(text='HQ Stream', command=start_camera_stream)
         stream_btn1.configure(text='LQ Stream', command=start_screen_stream)
-        #StreamSetting.STOP_SCREEN()
+        StreamSetting.STOP_SCREEN()
         screen_stream_indicator = 0
 
 
