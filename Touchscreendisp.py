@@ -639,11 +639,11 @@ def start_camera_stream_command():
 def start_camera_stream():
     global camera_stream_indicator, stream_btn, stream_btn1
     if platform.get() == 1 and stream_code_checker(code_dic[current_code['text']]) == 'Facebook':
-        messagebox.showerror('Stream code is formatted for Facebook and you are trying to stream to Youtube. Change either stream key or platform in settings')
+        messagebox.showerror("", "Stream code is formatted for Facebook and you are trying to stream to Youtube. Change either stream key or platform in settings")
     elif platform.get() == 0 and stream_code_checker(code_dic[current_code['text']]) == 'Youtube':
-        messagebox.showerror('Stream code is formatted for Youtube and you are trying to stream to Facebook. Change either stream key or platform in settings')
+        messagebox.showerror("", 'Stream code is formatted for Youtube and you are trying to stream to Facebook. Change either stream key or platform in settings')
     elif stream_code_checker(code_dic[current_code['text']]) == 'None':
-        messagebox.showerror('Stream key is in an invalid format. Check your stream key')
+        messagebox.showerror("", 'Stream key is in an invalid format. Check your stream key')
     else:
         camera_stream = start_camera_stream_command()
         stream_btn.configure(text='Streaming', command=None)
@@ -753,7 +753,7 @@ customise_names = [['Reset', vs.make_normal, 'Reset'], ['Make Grey', vs.make_gre
                    ['Zoom out', vs.make_zoom_out, 'Zoom/Pan'], [leftarrowrender, vs.make_pan_left, 'Zoom/Pan'],
                    [rightarrowrender, vs.make_pan_right, 'Zoom/Pan'], [uparrowrender, vs.make_pan_up, 'Zoom/Pan'],
                    [downarrowrender, vs.make_pan_down, 'Zoom/Pan'],
-                   ['Outline', vs.make_edge_detection, 'Effects'], ['Sepia', vs.make_sepia, 'Colour'],
+                   ['Outline', vs.make_edge_detection, 'Effects'], ['Low Light', vs.make_sepia, 'Colour'],
                    ['Face Detection', vs.detect_face, 'Effects'], ['Motion Tracker', vs.motion_tracker, 'Effects'],
                    ['Autofocus', vs.auto_focus, 'Effects'], ['LQ stream start', start_screen_stream, 'Start'],
                    ['HQ stream start', start_camera_stream, 'Start'], ['Stop', stop_stream, 'Start']]
