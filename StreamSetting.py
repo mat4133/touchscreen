@@ -41,7 +41,7 @@ def STREAM_CAMERA_COMMAND(FPS, VIDEOBUFFER, KEY, PLATFORM, AUDIO):
         BUFFERAUDIO = 0
         BUFFERVIDEO = VIDEOBUFFER
     stream_pipe = subprocess.Popen(
-        '/home/pi/FFmpeg-n4.1.3/ffmpeg -use_wallclock_as_timestamps 1 -thread_queue_size 32K -f h264 -r ' + str(FPS) + ' -itsoffset ' + str(BUFFERVIDEO) + ' -i - -f alsa -ar 11025 -itsoffset ' + str(BUFFERAUDIO) + ' -ac 1 -thread_queue_size 32K -i pulse -use_wallclock_as_timestamps 1 -vol ' + str(VOLUME) + ' -c:a aac -async 1 -c:v libx264 -preset ultrafast -f flv -r ' + str(FPS) + ' ' + str(STREAMURL) + str(KEY),
+        '/home/pi/FFmpeg-n4.1.3/ffmpeg -use_wallclock_as_timestamps 1 -thread_queue_size 32K -f h264 -r ' + str(FPS) + ' -itsoffset ' + str(BUFFERVIDEO) + ' -i - -f alsa -ar 16000 -itsoffset ' + str(BUFFERAUDIO) + ' -ac 1 -thread_queue_size 32K -i pulse -use_wallclock_as_timestamps 1 -vol ' + str(VOLUME) + ' -c:a aac -async 1 -filter:a "highpass=f=80, lowpass=f=8000" -c:v libx264 -preset ultrafast -f flv -r ' + str(FPS) + ' ' + str(STREAMURL) + str(KEY),
         stdin=subprocess.PIPE, shell=True)
     if flag == 0:
         camera.framerate = FPS
@@ -77,5 +77,5 @@ def STREAM_SCREEN_COMMAND(FPS, VIDEOBUFFER, KEY, PLATFORM, AUDIO):
         BUFFERAUDIO = 0
         BUFFERVIDEO = VIDEOBUFFER
     stream_pipe = subprocess.Popen(
-        '/home/pi/FFmpeg-n4.1.3/ffmpeg -use_wallclock_as_timestamps 1 -thread_queue_size 32k -f x11grab -s 330x200 -r ' + str(FPS) + ' -itsoffset ' + str(BUFFERVIDEO) + ' -i :0.0+5,35 -f alsa -use_wallclock_as_timestamps 1 -ac 1 -ar 11025 -thread_queue_size 32k -itsoffset ' + str(BUFFERAUDIO) + ' -i pulse -async 1 -c:v libx264 -c:a aac -pix_fmt yuv420p -qp 0 -preset ultrafast -r ' + str(FPS) + ' -vol ' + str(VOLUME) + ' -f flv ' + str(STREAMURL) + str(KEY),
+        '/home/pi/FFmpeg-n4.1.3/ffmpeg -use_wallclock_as_timestamps 1 -thread_queue_size 32k -f x11grab -s 330x200 -r ' + str(FPS) + ' -itsoffset ' + str(BUFFERVIDEO) + ' -i :0.0+5,35 -f alsa -use_wallclock_as_timestamps 1 -ac 1 -ar 16000 -thread_queue_size 32k -itsoffset ' + str(BUFFERAUDIO) + ' -i pulse -async 1 -c:v libx264 -c:a aac -filter:a "highpass=f=80, lowpass=f=8000" -pix_fmt yuv420p -qp 0 -preset ultrafast -r ' + str(FPS) + ' -vol ' + str(VOLUME) + ' -f flv ' + str(STREAMURL) + str(KEY),
         stdin=subprocess.PIPE, shell=True)

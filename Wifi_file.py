@@ -87,6 +87,12 @@ def change_priority(network):
             i.priority = 0
 '''
 
+def clear():
+    saved_networks = []
+    network_file = open('/home/pi/touchscreen-main/Saved_wifi', 'wb')
+    pickle.dump(saved_networks, network_file)
+    network_file.close()
+
 def connect():
     os.system('sudo rfkill block wifi')
     os.system('sudo rfkill unblock wifi')

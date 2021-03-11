@@ -155,7 +155,7 @@ app.title('Streaming on a prayer')
 app.geometry('480x320')
 
 # swap to fullscreen when using touchscreen
-# app.attributes('-fullscreen', True)
+#app.attributes('-fullscreen', True)
 
 # initializing style
 style = ThemedStyle(app)
@@ -180,8 +180,6 @@ note.pack()
 
 stream = ttk.Frame(note)
 settings = ttk.Frame(note)
-settings2 = ttk.Frame(note)
-settings2.pack(fill=BOTH, expand=True)
 wifi_login = ttk.Frame(note)
 tutorial = ttk.Frame(note)
 
@@ -190,16 +188,16 @@ stock_width = int(1.33333 * stock_height)
 stock = Label(stream, bg=style.lookup('TFrame', 'background'))
 
 note.add(stream, text="STREAM")
-note.add(settings2, text="SETTINGS")
+note.add(settings, text="SETTINGS")
 note.add(wifi_login, text="WIFI")
 note.add(tutorial, text="TUTORIAL")
 
 # Settings display------------------------------------------------------------------------------------------------------
 
 # Configuring grid layout for settings window
-settings2.grid_columnconfigure(0, weight=2)
-settings2.grid_columnconfigure((1, 2), weight=1)
-settings2.grid_rowconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8), weight=1)
+settings.grid_columnconfigure(0, weight=2)
+settings.grid_columnconfigure((1, 2), weight=1)
+settings.grid_rowconfigure((0, 1, 2, 3, 4, 5, 6, 7, 8), weight=1)
 
 
 # Wifi login and code ----------------------------------------------------------------------
@@ -286,6 +284,7 @@ def connect():
             failed_connection = messagebox.showerror("Wifi connection failed")
         else:
             wifi_connected.configure(text="Connected")
+        wf.dump()
     except:
         print("No Network Detected")
 
@@ -321,8 +320,11 @@ password_entr.bind("<Button>", password_space_wifi)
 
 toggle_btn = ttk.Button(wifi_login, text='Show Password', command=toggle_password)
 
+clear_btn = ttk.Button(wifi_login, text='Clear Saved Networks', command=wf.clear)
+clear_btn.grid(column=0, row=3)
+
 connect_btn = ttk.Button(wifi_login, text='CONNECT/SAVE', command=connect)
-connect_btn.grid(columnspan=2, row=3)
+connect_btn.grid(column =1, row=3)
 
 keyboard_frame3 = Frame(wifi_login)
 keyboard_frame3.configure(bg=style.lookup('TFrame', 'background'))
@@ -333,6 +335,8 @@ keyboard_frame3.columnconfigure(0, weight=1)
 keyboard_frame3 = create_keyboard(keyboard_frame3, password_entr, password_text, style, password_keyboard_off)
 
 # Settings frame--------------------------------------------------------------------------------------
+
+'''
 
 # Adding scrollbar to frame-----------------------------------
 
@@ -381,6 +385,8 @@ def _configure_canvas(event):
 
 canvas.bind('<Configure>', _configure_canvas)
 
+'''
+
 # importing default settings -------------------------------------------------------------------------
 
 # code for saving and importing streams
@@ -401,8 +407,8 @@ def enter_code():
     input_code = stream_code.get()
     actual_code = input_code
     # checks if this is the first key entered and if so deletes the '' that was in it's place
-    if len(input_code) > 10:
-        input_code = input_code[0:10] + '...'
+    if len(input_code) > 30:
+        input_code = input_code[0:30] + '...'
     code_dic[input_code] = actual_code
     if code_list[0] == '':
         code_list.remove('')
@@ -427,7 +433,7 @@ def enter_code():
     #delay_value.get(), code_dic[current_code['text']], platform.get(), 1)
     #camera_stream = function_maker(StreamSetting.STREAM_CAMERA_COMMAND, frame_rate.get(), bit_rate.get(),
     #delay_value.get(), code_dic[current_code['text']], platform.get(), 1)
-    #existing_codes['menu'].add_command(label=input_code, command=_setit(value, input_code))
+    existing_codes['menu'].add_command(label=input_code, command=_setit(value, input_code))
 
 
 # Program to clear stream keys from memory+screen
@@ -451,12 +457,12 @@ def clear_code():
 
 # Program to select new stream code from existing ones
 
-def change_code():
+def change_code(*args):
     global existing_codes, screen_stream, camera_stream, code_list, code_dic
 
     chosen_code = value.get()
     current_code['text'] = chosen_code
-
+    
     code_list.remove(chosen_code)
     code_list.insert(0, chosen_code)
     codedic_list = [code_list, code_dic]
@@ -479,9 +485,9 @@ current_codetext = code_list[0]
 stream_label = ttk.Label(settings, text='Current stream key:')
 stream_label.grid(column=0, row=0)
 current_code = ttk.Label(settings, text=current_codetext)
-current_code.grid(column=1, row=0)
+current_code.grid(column=1, row=0, columnspan=2)
 
-# thing to start settings update
+# thing to start settings updator
 if starting == 0:
     inital_settings()
     update_settings()
@@ -498,8 +504,13 @@ def keyboard_space_settings(*args):
     delay_lbl.grid_forget()
     BckLbl.grid_forget()
     delay.grid_forget()
+    platform_btn.grid_forget()
+    platform_label.grid_forget()
+    current_platform.grid_forget()
+    screen_calib.grid_forget()
     frame_rate_label.grid_forget()
     frame_rate_scroller.grid_forget()
+    
     keyboard_on(keyboard_frame1.children['!frame'])
 
 
@@ -507,14 +518,18 @@ def reset_page(current_frame):
     current_frame.grid_forget()
     clear_label.grid(column=0, row=3)
     clr_lbl_bck.grid(column=1, row=3, columnspan=2)
-    audio_chklbl.grid(column=0, row=4)
-    audio_chk.grid(column=1, row=4, columnspan=2)
+    audio_chklbl.grid(column=0, row=5)
+    audio_chk.grid(column=1, row=5, columnspan=2)
     clear_button.grid(column=1, row=3, columnspan=2)
-    delay_lbl.grid(column=0, row=5)
-    BckLbl.grid(column=1, row=4, columnspan=2)
-    delay.grid(column=1, row=5, columnspan=2)
-    frame_rate_label.grid(column=0, row=6)
-    frame_rate_scroller.grid(column=1, row=6, columnspan=2)
+    delay_lbl.grid(column=0, row=6)
+    BckLbl.grid(column=1, row=5, columnspan=2)
+    delay.grid(column=1, row=6, columnspan=2)
+    platform_btn.grid(row=4, column=2)
+    platform_label.grid(row=4, column=0)
+    current_platform.grid(row=4, column=1)
+    screen_calib.grid(row=8, column=1)
+    frame_rate_label.grid(column=0, row=7)
+    frame_rate_scroller.grid(column=1, row=7, columnspan=2)
 
 
 # user to input stream key
@@ -539,12 +554,10 @@ keyboard_frame1 = create_keyboard(keyboard_frame1, stream_code, stream_text, sty
 stream_p_label = ttk.Label(settings, text="Saved keys:")
 stream_p_label.grid(column=0, row=2)
 value = StringVar()
-value.set(current_codetext)  # Setting the key (should be last key used)
+value.set(current_codetext)# Setting the key (should be last key used)
 value.trace('w', change_code)
 existing_codes = ttk.OptionMenu(settings, value, *code_list)
-existing_codes.grid(column=1, row=2)
-stream_p_enter = ttk.Button(settings, text="Use key", command=change_code)
-stream_p_enter.grid(column=2, row=2)
+existing_codes.grid(column=1, row=2, columnspan=2)
 
 # Clearing list of stream codes
 clear_label = ttk.Label(settings, text='Clear keys:')
@@ -556,24 +569,25 @@ clear_button.grid(column=1, row=3, columnspan=2)
 
 # Allow stream w_out audio?
 audio_chklbl = ttk.Label(settings, text='Audioless streaming:')
-audio_chklbl.grid(column=0, row=4)
+audio_chklbl.grid(column=0, row=5)
 audio_chk = ttk.Checkbutton(settings, var=chk_state)
-audio_chk.grid(column=1, row=4, columnspan=2)
+audio_chk.grid(column=1, row=5, columnspan=2)
 
 # Code for delay_option
 delay_lbl = ttk.Label(settings, text="Audio-video delay:")
-delay_lbl.grid(column=0, row=5)
+delay_lbl.grid(column=0, row=6)
 BckLbl = ttk.Label(settings, text='')
-BckLbl.grid(column=1, row=5, columnspan=2)
+BckLbl.grid(column=1, row=6, columnspan=2)
 
 # initial value
 delay = ttk.Spinbox(settings, from_=-50, to=50, increment=0.1, textvariable=delay_value)
-delay.grid(column=1, row=5, columnspan=2)
+delay.grid(column=1, row=6, columnspan=2)
 
 frame_rate_label = ttk.Label(settings, text='Frame Rate:')
 frame_rate_scroller = ttk.Spinbox(settings, from_=0, to=100, textvariable=frame_rate)
-frame_rate_scroller.grid(column=1, row=6, columnspan=2)
-frame_rate_label.grid(column=0, row=6)
+frame_rate_scroller.grid(column=1, row=7, columnspan=2)
+frame_rate_label.grid(column=0, row=7)
+
 
 
 # More settings ---------------------------------------------------------------------------------------------
@@ -585,7 +599,7 @@ def touchscreen_calibration():
 
 
 screen_calib = ttk.Button(settings, text="Calibrate screen", command=touchscreen_calibration)
-screen_calib.grid(column=2, row=9)
+screen_calib.grid(column=1, row=8)
 
 
 # Change streaming platform-----------------------------------------------------------------------------
@@ -600,20 +614,20 @@ def change_platform():
         platform_name = ' YouTube '
     # print(platform)
     current_platform = ttk.Label(settings, text=platform_name)
-    current_platform.grid(row=7, column=1)
+    current_platform.grid(row=4, column=1)
 
 
 platform_label = ttk.Label(settings, text='Streaming Platform:')
-platform_label.grid(row=7, column=0)
+platform_label.grid(row=4, column=0)
 platform_btn = ttk.Button(settings, text='Change Platform', command=change_platform)
-platform_btn.grid(row=7, column=2)
+platform_btn.grid(row=4, column=2)
 
 if platform.get() == 0:
     platform_name = ' Facebook '
 elif platform.get() == 1:
     platform_name = ' YouTube '
 current_platform = ttk.Label(settings, text=platform_name)
-current_platform.grid(row=7, column=1)
+current_platform.grid(row=4, column=1)
 
 # Stream display--------------------------------------------------------------------------------------------------------
 
@@ -636,8 +650,12 @@ def start_camera_stream():
         messagebox.showerror("", 'Stream key is in an invalid format. Check your stream key')
     else:
         camera_stream = start_camera_stream_command()
-        stream_btn.configure(text='Streaming', command=None)
-        stream_btn1.configure(text='Streaming', command=None)
+        #stream_btn.configure(text='Streaming', command=None)
+        #stream_btn1.configure(text='Streaming', command=None)
+        print(buttons[18])
+        print(buttons[19])
+        buttons[18].configure(text='Streaming', state=DISABLED)
+        buttons[19].configure(text='Streaming', state=DISABLED)
         camera_stream_indicator = 1
         vs.stop_view()
         threading.Thread(target = camera_stream).start()
@@ -660,8 +678,10 @@ def start_screen_stream():
         note.tab(1, state='disabled')
         note.tab(2, state='disabled')
         note.tab(3, state='disabled')
-        stream_btn.configure(text='Streaming', command=None)
-        stream_btn1.configure(text='Streaming', command=None)
+        #stream_btn.configure(text='Streaming', command=None)
+        #stream_btn1.configure(text='Streaming', command=None)
+        buttons[18].configure(text='Streaming', state=DISABLED)
+        buttons[19].configure(text='Streaming', state=DISABLED)
         threading.Thread(target = screen_stream).start()
 
 
@@ -672,16 +692,18 @@ def stop_stream():
         vs.start_view()
         vs.cap_set(stock, stock_height, stock_width)
         camera_stream_indicator = 0
-        stream_btn.configure(text='HQ Stream', command=start_camera_stream)
-        stream_btn1.configure(text='LQ Stream', command=start_screen_stream)
+        #stream_btn.configure(text='HQ Stream', command=start_camera_stream)
+        #stream_btn1.configure(text='LQ Stream', command=start_screen_stream)
     elif screen_stream_indicator == 1:
         note.tab(1, state='normal')
         note.tab(2, state='normal')
         note.tab(3, state='normal')
-        stream_btn.configure(text='HQ Stream', command=start_camera_stream)
-        stream_btn1.configure(text='LQ Stream', command=start_screen_stream)
+        #stream_btn.configure(text='HQ Stream', command=start_camera_stream)
+        #stream_btn1.configure(text='LQ Stream', command=start_screen_stream)
         StreamSetting.STOP_SCREEN()
         screen_stream_indicator = 0
+    buttons[18].configure(text='LQ Stream', command=start_screen_stream, state=ACTIVE)
+    buttons[19].configure(text='HQ Stream', command=start_camera_stream, state=ACTIVE)
 
 
 # Go button
@@ -693,6 +715,9 @@ stream_btn1.grid(column=0, row=1)
 stream_btn2 = ttk.Button(StreamButtons, text='Stop', command=stop_stream)
 stream_btn2.grid(column=0, row=2)
 StreamButtons.grid(column=4, row=3, rowspan=2)
+
+stream_btn3 = ttk.Button(stream, text='Stop', command=stop_stream)
+stream_btn3.grid(column=4, row=3, rowspan=2, sticky='nesw')
 
 # Button to select between video options
 
@@ -734,7 +759,7 @@ right_per = (arrow_height / float(rightarrow.size[0]))
 rightarrow = rightarrow.resize((arrow_height, height))
 rightarrowrender = ImageTk.PhotoImage(rightarrow)
 
-customise_names = [['Reset', vs.make_normal, 'Reset'], ['Make Grey', vs.make_grey, 'Colour'],
+customise_names = [['Make Grey', vs.make_grey, 'Colour'],
                    ['Brightness up', vs.make_bright, 'Properties'], ['Brightness down', vs.make_dark, 'Properties'],
                    ['Blur', vs.make_blur, 'Properties'], ['Sharpen', vs.make_sharpen, 'Properties'],
                    ['Rotate clock', vs.make_clockwise_rotate, 'Rotate'],
@@ -746,7 +771,9 @@ customise_names = [['Reset', vs.make_normal, 'Reset'], ['Make Grey', vs.make_gre
                    ['Outline', vs.make_edge_detection, 'Effects'], ['Low Light', vs.make_sepia, 'Colour'],
                    ['Face Detection', vs.detect_face, 'Effects'], ['Motion Tracker', vs.motion_tracker, 'Effects'],
                    ['Autofocus', vs.auto_focus, 'Effects'], ['LQ stream start', start_screen_stream, 'Start'],
-                   ['HQ stream start', start_camera_stream, 'Start'], ['Stop', stop_stream, 'Start']]
+                   ['HQ stream start', start_camera_stream, 'Start'], ['Stop', stop_stream, 'Start'],
+                   ['Colour Reset', vs.make_colour_reset, 'Reset'], 
+                   ['Zoom Reset', vs.make_zoom_reset, 'Reset'],['Full Reset', vs.make_full_reset, 'Reset'], ['Centre Zoom', vs.make_centre_pan, 'Reset']]
 
 windows_names = ['Reset', 'Colour', 'Properties', 'Rotate', 'Zoom/Pan', 'Effects', 'Start']
 windows = list(range(len(windows_names)))

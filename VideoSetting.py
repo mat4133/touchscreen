@@ -141,7 +141,7 @@ def make_zoom_reset(*args):
     settings['left_offset'] = 0
     settings['right_offset'] = 0
 
-def make_pan_centre(*args):
+def make_centre_pan(*args):
     global settings
     difference = settings['bottom_offset'] + settings['top_offset']
     settings['top_offset'] = int(difference/2)
@@ -323,6 +323,7 @@ def show_frame(video_frame, height, width):
     elif show_image == 9:
         # Sepia
         cv2image = cv2.filter2D(cv2image, -1, np.array([[0.272, 0.534, 0.131], [0.349, 0.686, 0.168], [0.393, 0.769, 0.189]]))
+        cv2image = cv2.cvtColor(cv2image, cv2.COLOR_BGR2RGBA)
     elif show_image >=10:
         cv2image = face_stuff(cv2image)
         cv2image = cv2.cvtColor(cv2image, cv2.COLOR_BGR2RGBA)
