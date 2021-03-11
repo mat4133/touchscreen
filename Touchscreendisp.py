@@ -82,19 +82,18 @@ class Customise_window():
 # Functions for resetting back to the default settings
 def set_defaults():
     settings_file = open('/home/pi/touchscreen-main/settings_file', 'wb')
-    settings_dic = {'bit_rate': 6000000, 'frame_rate': 30, 'audioless': False, 'audio_delay': 0, 'platform': 0}
+    settings_dic = {'frame_rate': 30, 'audioless': False, 'audio_delay': 0, 'platform': 0}
     pickle.dump(settings_dic, settings_file)
     settings_file.close()
 
 
 # Function for reading the settings from settings_file
 def inital_settings():
-    global frame_rate, delay_value, chk_state, bit_rate, platform
+    global frame_rate, delay_value, chk_state, platform
     try:
         previous_settings = open('settings_file', 'rb')
         saved_values = pickle.load(previous_settings)
         chk_state = IntVar(value=saved_values['audioless'])
-        bit_rate = DoubleVar(value=saved_values['bit_rate'])
         frame_rate = DoubleVar(value=saved_values['frame_rate'])
         delay_value = DoubleVar(value=saved_values['audio_delay'])
         platform = IntVar(value=saved_values['platform'])
@@ -102,7 +101,6 @@ def inital_settings():
     except:
         set_defaults()
         chk_state = IntVar(value=False)
-        bit_rate = DoubleVar(value=6000000)
         frame_rate = DoubleVar(value=30)
         delay_value = DoubleVar(value=0)
         platform = IntVar(value=0)
@@ -110,8 +108,8 @@ def inital_settings():
 
 # Function for updating file every 5 seconds with new settings
 def update_settings(*args):
-    global frame_rate, delay_value, chk_state, bit_rate, platform, screen_stream, camera_stream
-    settings_dic = {'bit_rate': bit_rate.get(), 'frame_rate': frame_rate.get(), 'audioless': chk_state.get(),
+    global frame_rate, delay_value, chk_state, platform, screen_stream, camera_stream
+    settings_dic = {'frame_rate': frame_rate.get(), 'audioless': chk_state.get(),
                     'audio_delay': delay_value.get(), 'platform': platform.get()}
     settings_file = open('/home/pi/touchscreen-main/settings_file', 'wb')
     pickle.dump(settings_dic, settings_file)
@@ -288,7 +286,6 @@ def connect():
             failed_connection = messagebox.showerror("Wifi connection failed")
         else:
             wifi_connected.configure(text="Connected")
-        wf.dump()
     except:
         print("No Network Detected")
 
@@ -483,7 +480,7 @@ stream_label.grid(column=0, row=0)
 current_code = ttk.Label(settings, text=current_codetext)
 current_code.grid(column=1, row=0)
 
-# thing to start settings updator
+# thing to start settings update
 if starting == 0:
     inital_settings()
     update_settings()
@@ -501,9 +498,7 @@ def keyboard_space_settings(*args):
     BckLbl.grid_forget()
     delay.grid_forget()
     frame_rate_label.grid_forget()
-    bit_rate_label.grid_forget()
     frame_rate_scroller.grid_forget()
-    bit_rate_scroller.grid_forget()
     keyboard_on(keyboard_frame1.children['!frame'])
 
 
@@ -518,9 +513,7 @@ def reset_page(current_frame):
     BckLbl.grid(column=1, row=4, columnspan=2)
     delay.grid(column=1, row=5, columnspan=2)
     frame_rate_label.grid(column=0, row=6)
-    bit_rate_label.grid(column=0, row=7)
     frame_rate_scroller.grid(column=1, row=6, columnspan=2)
-    bit_rate_scroller.grid(column=1, row=7, columnspan=2)
 
 
 # user to input stream key
@@ -546,6 +539,7 @@ stream_p_label = ttk.Label(settings, text="Saved keys:")
 stream_p_label.grid(column=0, row=2)
 value = StringVar()
 value.set(current_codetext)  # Setting the key (should be last key used)
+value.trace('w', change_code)
 existing_codes = ttk.OptionMenu(settings, value, *code_list)
 existing_codes.grid(column=1, row=2)
 stream_p_enter = ttk.Button(settings, text="Use key", command=change_code)
@@ -580,11 +574,6 @@ frame_rate_scroller = ttk.Spinbox(settings, from_=0, to=100, textvariable=frame_
 frame_rate_scroller.grid(column=1, row=6, columnspan=2)
 frame_rate_label.grid(column=0, row=6)
 
-bit_rate_label = ttk.Label(settings, text='Bit Rate: ')
-bit_rate_scroller = ttk.Spinbox(settings, from_=0, to=6000000, increment=50000, textvariable=bit_rate)
-bit_rate_label.grid(column=0, row=7)
-bit_rate_scroller.grid(column=1, row=7, columnspan=2)
-
 
 # More settings ---------------------------------------------------------------------------------------------
 
@@ -595,7 +584,7 @@ def touchscreen_calibration():
 
 
 screen_calib = ttk.Button(settings, text="Calibrate screen", command=touchscreen_calibration)
-screen_calib.grid(column=2, row=0)
+screen_calib.grid(column=2, row=9)
 
 
 # Change streaming platform-----------------------------------------------------------------------------
@@ -610,20 +599,20 @@ def change_platform():
         platform_name = ' YouTube '
     # print(platform)
     current_platform = ttk.Label(settings, text=platform_name)
-    current_platform.grid(row=9, column=1)
+    current_platform.grid(row=7, column=1)
 
 
 platform_label = ttk.Label(settings, text='Streaming Platform:')
-platform_label.grid(row=9, column=0)
+platform_label.grid(row=7, column=0)
 platform_btn = ttk.Button(settings, text='Change Platform', command=change_platform)
-platform_btn.grid(row=9, column=2)
+platform_btn.grid(row=7, column=2)
 
 if platform.get() == 0:
     platform_name = ' Facebook '
 elif platform.get() == 1:
     platform_name = ' YouTube '
 current_platform = ttk.Label(settings, text=platform_name)
-current_platform.grid(row=9, column=1)
+current_platform.grid(row=7, column=1)
 
 # Stream display--------------------------------------------------------------------------------------------------------
 
