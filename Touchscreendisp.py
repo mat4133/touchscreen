@@ -457,6 +457,7 @@ def change_code():
     chosen_code = value.get()
     current_code['text'] = chosen_code
 
+    code_list.remove(chosen_code)
     code_list.insert(0, chosen_code)
     codedic_list = [code_list, code_dic]
     # adds the new key to a file
