@@ -116,7 +116,7 @@ def function_maker(function, *part_args):  # takes in the function to make more 
         return function(*argument)
     return wraps
 
-def make_normal(*args):
+def make_full_reset(*args):
     global show_image, brightness, settings
     settings['top_offset'] = 0
     settings['bottom_offset'] = 0
@@ -125,6 +125,29 @@ def make_normal(*args):
     settings['rotation'] = 3
     brightness = 0
     show_image = 1
+
+def make_colour_reset(*args):
+    global show_image
+    show_image = 1
+
+def make_brightness_reset(*args):
+    global brightness
+    brightness = 0
+
+def make_zoom_reset(*args):
+    global settings
+    settings['top_offset'] = 0
+    settings['bottom_offset'] = 0
+    settings['left_offset'] = 0
+    settings['right_offset'] = 0
+
+def make_pan_centre(*args):
+    global settings
+    difference = settings['bottom_offset'] + settings['top_offset']
+    settings['top_offset'] = int(difference/2)
+    settings['bottom_offset'] = int(difference/2)
+    settings['left_offset'] = int(difference/2)
+    settings['right_offset'] = int(difference/2)
 
 def make_grey(*args):
     global show_image
@@ -337,4 +360,4 @@ def stop_view():
 def start_view():
     time.sleep(1)
     cap.open(0)
-    make_normal()
+    make_full_reset()
