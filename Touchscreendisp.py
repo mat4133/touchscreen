@@ -219,13 +219,12 @@ def password_keyboard_off(current_frame):
     search_networks.grid(column=1, row=1)
     password_entr.grid(column=1, row=2)
     password_lbl.grid(column=0, row=2)
-    connect_btn.grid(columnspan=2, row=3)
+    connect_btn.grid(column=1, columnspan=1, row=3)
     toggle_btn.grid_forget()
     keyboard_frame3.grid_forget()
 
 
 saved_networks = wf.save_get()
-print('Saved_networks:', saved_networks)
 
 counter = 0
 connected = False
@@ -235,7 +234,6 @@ while (counter < len(saved_networks) and connected == False):
     connected = wf.save_conf(saved_networks[counter-1],0)
 counter = 0
 
-saved_networks = []
 wifi_login.grid_rowconfigure((0, 1, 2, 3, 4), weight=1)
 wifi_login.grid_columnconfigure((0, 1), weight=1)
 
@@ -273,7 +271,6 @@ candidate_network = 'none'
 
 def connect():
     global candidate_network
-    print(candidate_network)
     try:
         candidate_network.password = password_text.get()
         if candidate_network in saved_networks:
@@ -284,7 +281,6 @@ def connect():
             failed_connection = messagebox.showerror("Wifi connection failed")
         else:
             wifi_connected.configure(text="Connected")
-        wf.dump()
     except:
         print("No Network Detected")
 
@@ -317,10 +313,19 @@ password_text = StringVar()
 password_entr = ttk.Entry(wifi_login, show='*', textvariable=password_text)
 password_entr.grid(column=1, row=2)
 password_entr.bind("<Button>", password_space_wifi)
+password_filler(search_list[0])
 
 toggle_btn = ttk.Button(wifi_login, text='Show Password', command=toggle_password)
 
-clear_btn = ttk.Button(wifi_login, text='Clear Saved Networks', command=wf.clear)
+def clear():
+    global saved_network
+    saved_networks = []
+    password_text.set('')
+    network_file = open('/home/pi/touchscreen-main/Saved_wifi', 'wb')
+    pickle.dump(saved_networks, network_file)
+    network_file.close()
+
+clear_btn = ttk.Button(wifi_login, text='Clear Saved Networks', command=clear)
 clear_btn.grid(column=0, row=3)
 
 connect_btn = ttk.Button(wifi_login, text='CONNECT/SAVE', command=connect)
@@ -508,6 +513,7 @@ def keyboard_space_settings(*args):
     platform_label.grid_forget()
     current_platform.grid_forget()
     screen_calib.grid_forget()
+    
     frame_rate_label.grid_forget()
     frame_rate_scroller.grid_forget()
     
@@ -608,13 +614,17 @@ def change_platform():
     global platform
     if platform.get() == 1:
         platform = IntVar(value=0)
-        platform_name = ' Facebook '
+        platform_name.set(value=' Facebook ')
+        current_platform.configure(text = platform_name.get())
     elif platform.get() == 0:
         platform = IntVar(value=1)
-        platform_name = ' YouTube '
-    # print(platform)
-    current_platform = ttk.Label(settings, text=platform_name)
-    current_platform.grid(row=4, column=1)
+        platform_name.set(value=' YouTube ')
+        current_platform.configure(text = platform_name.get())
+
+platform_name = StringVar()
+
+current_platform = ttk.Label(settings, text=platform_name.get())
+current_platform.grid(row=4, column=1)
 
 
 platform_label = ttk.Label(settings, text='Streaming Platform:')
@@ -622,12 +632,15 @@ platform_label.grid(row=4, column=0)
 platform_btn = ttk.Button(settings, text='Change Platform', command=change_platform)
 platform_btn.grid(row=4, column=2)
 
-if platform.get() == 0:
-    platform_name = ' Facebook '
-elif platform.get() == 1:
-    platform_name = ' YouTube '
-current_platform = ttk.Label(settings, text=platform_name)
-current_platform.grid(row=4, column=1)
+change_platform()
+change_platform()
+
+#if platform.get() == 0:
+#    platform_name = ' Facebook '
+#elif platform.get() == 1:
+#    platform_name = ' YouTube '
+#current_platform = ttk.Label(settings, text=platform_name)
+#current_platform.grid(row=4, column=1)
 
 # Stream display--------------------------------------------------------------------------------------------------------
 
@@ -652,8 +665,6 @@ def start_camera_stream():
         camera_stream = start_camera_stream_command()
         #stream_btn.configure(text='Streaming', command=None)
         #stream_btn1.configure(text='Streaming', command=None)
-        print(buttons[18])
-        print(buttons[19])
         buttons[18].configure(text='Streaming', state=DISABLED)
         buttons[19].configure(text='Streaming', state=DISABLED)
         camera_stream_indicator = 1

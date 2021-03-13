@@ -19,14 +19,13 @@ saved_networks = []
 
 def wifi_find():
     a = os.popen("sudo iwlist wlan0 scan | perl -nle '/ESSID:(.*)$/ && print $1'").read()
-    print(a)
     network_list = []
     capture = False
     network = ''
     for i in range(len(a)):
         if a[i] == '"' and capture == True:
             capture = not capture
-            if network[0:2] != '\\' and network[0:2] != '\\x':
+            if network[0:2] != '\\' and network[0:2] != '\\x' and network not in network_list:
                 network_list.append(network)
         elif a[i] == '"' and capture == False:
             capture = not capture
@@ -87,18 +86,13 @@ def change_priority(network):
             i.priority = 0
 '''
 
-def clear():
-    saved_networks = []
-    network_file = open('/home/pi/touchscreen-main/Saved_wifi', 'wb')
-    pickle.dump(saved_networks, network_file)
-    network_file.close()
+
 
 def connect():
     os.system('sudo rfkill block wifi')
     os.system('sudo rfkill unblock wifi')
     time.sleep(8)
     a = os.popen('ifconfig wlan0').read()
-    print(a)
     if 'inet' in a:
         return True
 
