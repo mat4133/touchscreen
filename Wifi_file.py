@@ -18,7 +18,12 @@ class network():
 saved_networks = []
 
 def wifi_find():
-    a = os.popen("sudo iwlist wlan0 scan | perl -nle '/ESSID:(.*)$/ && print $1'").read()
+    try:
+        a = os.popen("sudo iwlist wlan0 scan | perl -nle '/ESSID:(.*)$/ && print $1'").read()
+    except:
+        time.sleep(5)
+        a = os.popen("sudo iwlist wlan0 scan | perl -nle '/ESSID:(.*)$/ && print $1'").read()
+        #os.system('sudo reboot')
     network_list = []
     capture = False
     network = ''
