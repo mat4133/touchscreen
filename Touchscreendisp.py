@@ -28,7 +28,7 @@ class Customise_button(ttk.Button):
             super().__init__(stream, image=text, command=command)
         else:
             self.name = text
-            if self.name == 'LQ stream start' or self.name == 'HQ stream start':
+            if self.name == 'Customisable stream' or self.name == 'HQ stream':
                 super().__init__(stream, text=text, command=command, style='W.TButton')
             elif self.name == 'Stop':
                 super().__init__(stream, text=text, command=command, style='B.TButton')
@@ -713,7 +713,7 @@ def stop_stream():
         #stream_btn1.configure(text='LQ Stream', command=start_screen_stream)
         StreamSetting.STOP_SCREEN()
         screen_stream_indicator = 0
-    buttons[18].configure(text='LQ Stream', command=start_screen_stream, state=ACTIVE)
+    buttons[18].configure(text='Customisable Stream', command=start_screen_stream, state=ACTIVE)
     buttons[19].configure(text='HQ Stream', command=start_camera_stream, state=ACTIVE)
 
 
@@ -721,7 +721,7 @@ def stop_stream():
 StreamButtons = Frame(stream)
 stream_btn = ttk.Button(StreamButtons, text='HQ Stream', command=start_camera_stream)
 stream_btn.grid(column=0, row=0)
-stream_btn1 = ttk.Button(StreamButtons, text='LQ Stream', command=start_screen_stream)
+stream_btn1 = ttk.Button(StreamButtons, text='Customisable Stream', command=start_screen_stream)
 stream_btn1.grid(column=0, row=1)
 stream_btn2 = ttk.Button(StreamButtons, text='Stop', command=stop_stream)
 stream_btn2.grid(column=0, row=2)
@@ -781,8 +781,8 @@ customise_names = [['Make Grey', vs.make_grey, 'Colour'],
                    [downarrowrender, vs.make_pan_down, 'Zoom/Pan'],
                    ['Outline', vs.make_edge_detection, 'Effects'], ['Low Light', vs.make_sepia, 'Colour'],
                    ['Face Detection', vs.detect_face, 'Effects'], ['Motion Tracker', vs.motion_tracker, 'Effects'],
-                   ['Autofocus', vs.auto_focus, 'Effects'], ['LQ stream start', start_screen_stream, 'Start'],
-                   ['HQ stream start', start_camera_stream, 'Start'], ['Stop', stop_stream, 'Start'],
+                   ['Autofocus', vs.auto_focus, 'Effects'], ['Customisable stream', start_screen_stream, 'Start'],
+                   ['HQ stream', start_camera_stream, 'Start'], ['Stop', stop_stream, 'Start'],
                    ['Colour Reset', vs.make_colour_reset, 'Reset'], 
                    ['Zoom Reset', vs.make_zoom_reset, 'Reset'],['Full Reset', vs.make_full_reset, 'Reset'], ['Centre Zoom', vs.make_centre_pan, 'Reset']]
 
@@ -833,10 +833,24 @@ stock.grid(column=0, row=0, columnspan=3, rowspan=3, sticky='nw')
 vs.cap_set(stock, stock_height, stock_width)
 # Tutorial section
 
-rick_roll = ttk.Label(tutorial, text="""Guide to using this touchscreen explaining what a stream key 
-is,how the process works (i.e. that they need wifi, a video and audio device connected and a valid stream key. Also will 
-explain what the delay between audio/video is and why it is necessary,
-along with other necessary things...""")
+rick_roll = ttk.Label(tutorial, text="""1. Connect to WiFi by opening the WIFI tab and selecting the desired
+    network from the drop-down list. To input the password, tap on the
+    input box and a keyboard will appear to input the password.
+2. Enter the stream key by opening the SETTINGS tab and tapping on the
+    input box, a keyboard will appear allowing you to input the code.
+3. Ensure the correct steraming platform is selected by checking the
+    current streaming platform in the SETTINGS tab. If necessary, this
+    can be changed by pressing the ‘change platform’ button.
+4. Two different streams are available both of which can be activated
+    by pressing their respective buttons in the STREAM tab after
+    selecting ‘start’ in the dropdown menu, the high quality stream with
+    give the best quality video feed but is not customisable, nor can a
+    preview be seen on the device. The customisable stream allows much
+    more flexibility with video processing and also allows a preview on
+    the device.
+5. If the application freezes power cycle the device by unplugging and
+    replugging the power cable.
+""")
 rick_roll.grid(column=0, row=1)
 
 app.mainloop()
