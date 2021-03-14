@@ -5,7 +5,7 @@ from PIL import Image, ImageTk
 import numpy as np
 import io
 
-cascPath = 'haarcascade_frontalface_default.xml'
+cascPath = '/home/pi/touchscreen-main/haarcascade_frontalface_default.xml'
 facecascade = cv2.CascadeClassifier(cascPath)
 
 input_width = 640
