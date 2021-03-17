@@ -82,6 +82,7 @@ class Customise_window():
 # Functions for resetting back to the default settings
 def set_defaults():
     settings_file = open('/home/pi/touchscreen-main/settings_file', 'wb')
+    settings_file.truncate()
     settings_dic = {'frame_rate': 30, 'audioless': False, 'audio_delay': 0, 'platform': 0}
     pickle.dump(settings_dic, settings_file)
     settings_file.close()
@@ -90,20 +91,27 @@ def set_defaults():
 # Function for reading the settings from settings_file
 def inital_settings():
     global frame_rate, delay_value, chk_state, platform
+    #time.sleep(1)
     try:
-        previous_settings = open('settings_file', 'rb')
+        previous_settings = open('/home/pi/touchscreen-main/settings_file', 'rb')
         saved_values = pickle.load(previous_settings)
+        print(saved_values)
         chk_state = IntVar(value=saved_values['audioless'])
         frame_rate = DoubleVar(value=saved_values['frame_rate'])
         delay_value = DoubleVar(value=saved_values['audio_delay'])
         platform = IntVar(value=saved_values['platform'])
         previous_settings.close()
-    except:
+    #except:
+    except Exception as e:
+        #print(e)
+        #a = messagebox.showerror("", e)
+        a = messagebox.showerror("", "The streaming settings have been set to their default values, please open the SETTINGS tab and reset the parameters as desired")
         set_defaults()
         chk_state = IntVar(value=False)
         frame_rate = DoubleVar(value=30)
         delay_value = DoubleVar(value=0)
         platform = IntVar(value=0)
+        update_settings()
 
 
 # Function for updating file every 5 seconds with new settings
@@ -112,8 +120,15 @@ def update_settings(*args):
     settings_dic = {'frame_rate': frame_rate.get(), 'audioless': chk_state.get(),
                     'audio_delay': delay_value.get(), 'platform': platform.get()}
     settings_file = open('/home/pi/touchscreen-main/settings_file', 'wb')
+    settings_file.truncate()
     pickle.dump(settings_dic, settings_file)
+    #print(settings_dic)
+    
     settings_file.close()
+    
+    #test_read = open('/home/pi/touchscreen-main/settings_file', 'rb')
+    #print(test_read.read())
+    #test_read.close()
     # screen_stream = function_maker(StreamSetting.STREAM_SCREEN_COMMAND, frame_rate.get(), bit_rate.get(),
     # delay_value.get(), code_dic[current_code['text']], platform.get(), 1)
     # camera_stream = function_maker(StreamSetting.STREAM_CAMERA_COMMAND, frame_rate.get(), bit_rate.get(),
@@ -152,10 +167,10 @@ app = Tk()
 
 app.title('Streaming on a prayer')
 
-app.geometry('480x320')
+#app.geometry('480x320')
 
 # swap to fullscreen when using touchscreen
-#app.attributes('-fullscreen', True)
+app.attributes('-fullscreen', True)
 
 # initializing style
 style = ThemedStyle(app)
@@ -278,7 +293,7 @@ def connect():
         else:
             success = wf.save_conf(candidate_network, 1)
         if success == False:
-            failed_connection = messagebox.showerror("Wifi connection failed")
+            failed_connection = messagebox.showerror("", "Wifi connection failed")
         else:
             wifi_connected.configure(text="Connected")
     except:
@@ -342,33 +357,22 @@ keyboard_frame3 = create_keyboard(keyboard_frame3, password_entr, password_text,
 # Settings frame--------------------------------------------------------------------------------------
 
 '''
-
 # Adding scrollbar to frame-----------------------------------
-
 canvas = Canvas(settings2, borderwidth=0, highlightthickness=0, bd=0, bg=style.lookup('TFrame', 'background'))
 canvas.pack(side=LEFT, fill=BOTH, expand=True)
-
 scroll = ttk.Scrollbar(settings2, orient='vertical', command=canvas.yview)
 scroll.pack(side=RIGHT, fill=Y, expand='false')
 scroll.config(command=canvas.yview)
-
 canvas.config(yscrollcommand=scroll.set, scrollregion=(0, 0, 0, 600))
 canvas.pack(fill=BOTH, side=LEFT, expand=TRUE)
-
 # reset the view
 canvas.xview_moveto(0)
 canvas.yview_moveto(0)
-
 # create frame inside canvas
-
 settings = ttk.Frame(canvas)
 settings.pack()
 settings_id = canvas.create_window(50, 0, window=settings, anchor=NW)
-
-
 # settings.config(width=466)
-
-
 def _configure_interior(event):
     # update the scrollbars to match the size of the inner frame
     size = (settings.winfo_reqwidth(), settings.winfo_reqheight())
@@ -376,20 +380,13 @@ def _configure_interior(event):
     if settings.winfo_reqwidth() != canvas.winfo_width():
         # update the canvas's width to fit the inner frame
         canvas.config(width=settings.winfo_reqwidth())
-
-
 settings.bind('<Configure>', _configure_interior)
-
-
 def _configure_canvas(event):
     settings.configure(width=canvas.winfo_width())
     if settings.winfo_reqwidth() != canvas.winfo_width():
         # update the inner frame's width to fill the canvas
         canvas.itemconfigure(settings_id, width=canvas.winfo_width())
-
-
 canvas.bind('<Configure>', _configure_canvas)
-
 '''
 
 # importing default settings -------------------------------------------------------------------------
@@ -590,7 +587,7 @@ delay = ttk.Spinbox(settings, from_=-50, to=50, increment=0.1, textvariable=dela
 delay.grid(column=1, row=6, columnspan=2)
 
 frame_rate_label = ttk.Label(settings, text='Frame Rate:')
-frame_rate_scroller = ttk.Spinbox(settings, from_=0, to=100, textvariable=frame_rate)
+frame_rate_scroller = ttk.Spinbox(settings, from_=0, to=35, textvariable=frame_rate)
 frame_rate_scroller.grid(column=1, row=7, columnspan=2)
 frame_rate_label.grid(column=0, row=7)
 
@@ -609,6 +606,9 @@ screen_calib.grid(column=1, row=8)
 
 
 # Change streaming platform-----------------------------------------------------------------------------
+#save_settings = ttk.Button(settings, text="Save Settings", command=update_settings)
+#save_settings.grid(row=8, column=2)
+
 
 def change_platform():
     global platform
@@ -678,11 +678,11 @@ def start_screen_stream_command():
 def start_screen_stream():
     global screen_stream_indicator, stream_btn, stream_btn1
     if platform.get() == 1 and stream_code_checker(code_dic[current_code['text']]) == 'Facebook':
-        messagebox.showerror('Stream code is formatted for Facebook and you are trying to stream to Youtube. Change either stream key or platform in settings')
+        messagebox.showerror("", 'Stream code is formatted for Facebook and you are trying to stream to Youtube. Change either stream key or platform in settings')
     elif platform.get() == 0 and stream_code_checker(code_dic[current_code['text']]) == 'Youtube':
-        messagebox.showerror('Stream code is formatted for Youtube and you are trying to stream to Facebook. Change either stream key or platform in settings')
+        messagebox.showerror("", 'Stream code is formatted for Youtube and you are trying to stream to Facebook. Change either stream key or platform in settings')
     elif stream_code_checker(code_dic[current_code['text']]) == 'None':
-        messagebox.showerror('Stream key is in an invalid format. Check your stream key')
+        messagebox.showerror("", 'Stream key is in an invalid format. Check your stream key')
     else:
         screen_stream_indicator = 1
         screen_stream = start_screen_stream_command()
@@ -780,7 +780,7 @@ customise_names = [['Make Grey', vs.make_grey, 'Colour'],
                    [rightarrowrender, vs.make_pan_right, 'Zoom/Pan'], [uparrowrender, vs.make_pan_up, 'Zoom/Pan'],
                    [downarrowrender, vs.make_pan_down, 'Zoom/Pan'],
                    ['Outline', vs.make_edge_detection, 'Effects'], ['Low Light', vs.make_sepia, 'Colour'],
-                   ['Face Detection', vs.detect_face, 'Effects'], ['Motion Tracker', vs.motion_tracker, 'Effects'],
+                   ['Face Detect', vs.detect_face, 'Effects'], ['Motion Tracker', vs.motion_tracker, 'Effects'],
                    ['Autofocus', vs.auto_focus, 'Effects'], ['Customisable stream', start_screen_stream, 'Start'],
                    ['HQ stream', start_camera_stream, 'Start'], ['Stop', stop_stream, 'Start'],
                    ['Colour Reset', vs.make_colour_reset, 'Reset'], 

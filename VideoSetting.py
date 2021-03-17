@@ -82,7 +82,7 @@ def face_stuff(cv2image):
                 cv2.rectangle(cv2image, (x, y), (x + w, y + h), (0, 200, 0), 4)
         if show_image == 12:
             if len(detected_faces) == 1:
-                positions = face_focus(detected_faces, 1.5)
+                positions = face_focus(detected_faces, 2)
                 positions = reduce_zoom(positions)
                 cv2image = cv2image[positions[0]:positions[1], positions[2]:positions[3]]
             else:
@@ -99,7 +99,7 @@ def face_stuff(cv2image):
                 cv2image = cv2image[positions[0]:positions[1], positions[2]:positions[3]]
         if show_image == 13:
             if len(detected_faces) == 1:
-                positions = face_focus(detected_faces, 1.2)
+                positions = face_focus(detected_faces, 1.3)
                 face = cv2image[positions[0]:positions[1], positions[2]:positions[3]]
                 focused_face = cv2.filter2D(face, -1, np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]]))
                 blurred_face = cv2.GaussianBlur(cv2image, (35, 35), 0)
